@@ -1,0 +1,22 @@
+export default {
+    sportProject: {
+        id: "项目编号",
+        name: "项目名称",
+        projectClassId: "项目分类编号",
+        projectClassName: "项目分类名称",
+        parentId: "父项目编号",
+        parentName: "父项目名称",
+        unit: "项目单位",
+        projectVideoUrl: "项目介绍视频",
+        introduce: "项目介绍",
+        state: "项目状态",
+        creUserId: "创建者编号",
+        creUserName: "创建者名称",
+        creTime: "创建时间",
+        updUserId: "更新者编号",
+        updUserName: "更新者名称",
+        updTime: "更新时间",
+        deleted: "逻辑删除字段",
+        tenantId: "租户编号",
+    },
+}

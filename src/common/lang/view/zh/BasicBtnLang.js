@@ -1,0 +1,15 @@
+export default {
+    searchBtnName: "搜索",
+    resetBtnName: "重置",
+    addBtnName: "新增",
+    infoBtnName: "详情",
+    modifyBtnName: "编辑",
+    deleteBtnName: "删除",
+    batchAddBtnName: "批量新增",
+    batchDeleteBtnName: "批量删除",
+    resetPwdBtnName: "重置密码",
+    confirmBtnName: "确定",
+    cancelBtnName: "取消",
+    dictItemBtnName: "查看字典项",
+    dictItemAddBtnName: "新增字典项",
+}

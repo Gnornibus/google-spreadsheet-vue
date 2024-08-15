@@ -1,0 +1,22 @@
+export default {
+    sportMemberKey: {
+        id: "会员兑换码编号",
+        memberTypeId: "会员类型编号",
+        memberTypeName: "会员类型名称",
+        name: "兑换码类型名",
+        code: "兑换码",
+        userId: "兑换会员编号",
+        userName: "兑换会员名称",
+        exchangeDate: "兑换日期",
+        expiryDate: "失效日期",
+        state: "是否已使用",
+        creUserId: "创建者编号",
+        creUserName: "创建者名称",
+        creTime: "创建时间",
+        updUserId: "更新者编号",
+        updUserName: "更新者名称",
+        updTime: "更新时间",
+        deleted: "逻辑删除字段",
+        tenantId: "租户编号",
+    },
+}

@@ -1,0 +1,32 @@
+/*Message 消息提示*/
+@media screen and (max-width: 500px) {
+    .el-message {
+        min-width: 300px !important;
+    }
+}
+
+/*MessageBox 弹框*/
+@media screen and (max-width: 500px) {
+    .el-message-box {
+        width: 300px !important;
+    }
+}
+
+/*Dialog 对话框*/
+@media screen and (max-width: 500px) {
+    .el-dialog__wrapper .el-dialog {
+        width: 100% !important;
+    }
+
+    .el-dialog__body {
+        padding: 0 !important;
+    }
+
+    .el-form-item__label {
+        width: auto !important;
+    }
+    .el-dialog{
+        height: 100%;
+    }
+}
+

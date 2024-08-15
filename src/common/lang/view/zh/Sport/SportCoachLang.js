@@ -1,0 +1,20 @@
+export default {
+    sportCoach: {
+        id: "教练编号",
+        userId: "教练用户编号",
+        userName: "教练用户名称",
+        name: "教练名称",
+        avatarUrl: "教练头像地址",
+        tags: "教练标签",
+        content: "教练介绍",
+        state: "教练状态",
+        creUserId: "创建者编号",
+        creUserName: "创建者名称",
+        creTime: "创建时间",
+        updUserId: "更新者编号",
+        updUserName: "更新者名称",
+        updTime: "更新时间",
+        deleted: "逻辑删除字段",
+        tenantId: "租户编号",
+    },
+}

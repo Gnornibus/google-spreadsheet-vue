@@ -1,0 +1,21 @@
+export default {
+    sysRole:{
+        id: "角色编号",
+        platId: "平台编号",
+        platName: "平台名称",
+        name: "角色名称",
+        powers: "权限列表",
+        checkedKey: "选中权限",
+        ownCreUserPower: "可创建子角色",
+        state: "角色状态",
+        supRoleId: "直属角色",
+        ownerRoleId: "顶属角色",
+        remark: "备注",
+        creUserId: "创建者编号",
+        creUserName: "创建者名称",
+        creTime: "创建时间",
+        updUserId: "更新者编号",
+        updUserName: "更新者名称",
+        updTime: "更新时间",
+    },
+}

@@ -1,0 +1,20 @@
+export default {
+    sysFeedback:{
+        id: "反馈编号",
+        userId: "反馈用户",
+        feedbackContent: "反馈内容",
+        screenshot: "反馈截图",
+        feedbackUserId: "处理人员",
+        feedbackType: "反馈类型",
+        priority: "优先级",
+        feedbackState: "反馈状态",
+        feedbackResult: "反馈结果",
+        remark: "备注",
+        creUserId: "创建者编号",
+        creUserName: "创建者名称",
+        creTime: "创建时间",
+        updUserId: "更新者编号",
+        updUserName: "更新者名称",
+        updTime: "更新时间",
+    },
+}
