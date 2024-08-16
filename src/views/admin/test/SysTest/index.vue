@@ -1,29 +1,53 @@
 <template>
-    <div>
-        <data-select v-model="userId" data-select="sys-user" model=""></data-select>
-    </div>
+    <ag-grid-vue
+        class="ag-theme-alpine"
+        style="width: 100%; height: 600px;"
+        :columnDefs="columnDefs"
+        :rowData="rowData">
+    </ag-grid-vue>
 </template>
 
 <script>
-import DataSelect from "@/components/Select/DataSelect.vue";
+import {AgGridVue} from "ag-grid-vue";
 
 export default {
-    components: {DataSelect},
+    name: "AgTable",
+    components: {
+        AgGridVue,
+    },
     data() {
         return {
-            userId: -1,
+            gridApi: null,
+            columnDefs: [
+                {
+                    headerName: "名称",
+                    field: "title",
+                },
+                {
+                    headerName: "网址",
+                    field: "url",
+                },
+                {
+                    headerName: "分类",
+                    field: "catalog",
+                    resizable: true,
+                },
+                {
+                    headerName: "PR",
+                    field: "pr",
+                    resizable: true,
+                },
+            ],
+            //需要显示的数据
+            rowData: [
+                {title: "谷歌", url: "www.google", catalog: "搜索引擎", pr: 10},
+                {title: "微软", url: "www.microsoft.com", catalog: "操作系", pr: 10},
+                {title: "ITXST", url: "www.itxst.com", catalog: "小站", pr: 1},
+                {title: "淘宝", url: "www.taobao.com", catalog: "电商", pr: 8},
+            ],
         };
-    },
-    methods: {
-        // 处理暂停按钮点击事件
-        handleStop() {
-            const videoElement = this.$refs.addVideoRef;
-            if (videoElement.paused) {
-                videoElement.play(); // 如果视频处于暂停状态，则播放视频
-            } else {
-                videoElement.pause(); // 如果视频正在播放，则暂停视频
-            }
-        },
-    },
+    }
 };
 </script>
+
+<style lang="less" scoped></style>

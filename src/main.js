@@ -29,6 +29,11 @@ import * as filters from './common/filters'
  */
 import {globalMixin} from './mixin/globalMixin.js';
 
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-balham.css';
+// icon样式
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
 Vue.mixin(globalMixin);
 
 /**
