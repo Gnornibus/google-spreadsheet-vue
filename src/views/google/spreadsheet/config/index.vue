@@ -53,6 +53,12 @@
             top="10%"
             width="90%"
             @submit="grid.visible=false">
+            <template v-slot:title-slot>
+                <a type="primary" :href="grid.linkUrl" target="_blank"
+                         style="color: inherit; text-decoration: none;">
+                    <span style="color: deepskyblue">{{ grid.title }}</span>
+                </a>
+            </template>
             <ag-grid-vue
                 class="ag-theme-alpine"
                 style="width: 100%; height: 400px;"
@@ -433,6 +439,7 @@ export default {
                                     "sourceSheet": row.sourceSheet
                                 }).then((res) => {
                                     this.grid.title = "【来源】：" + row.sourceUrl + "   【页签】：" + row.sourceSheet
+                                    this.grid.linkUrl = "https://docs.google.com/spreadsheets/d/" + row.sourceUrl
                                     this.processData(res.data)
                                     this.grid.visible = true;
                                 })
@@ -925,6 +932,7 @@ export default {
             // AgGridVue
             grid: {
                 visible: false,
+                linkUrl: "https://docs.google.com/spreadsheets/u/0/",
                 title: "测试",
                 gridOptions: {
                     enableRangeSelection: true,

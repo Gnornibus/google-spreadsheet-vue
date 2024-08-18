@@ -29,6 +29,11 @@
         @submit="onSubmit"
         @dblclick.native="handleDoubleClick"
     >
+        <template v-slot:title>
+            <slot name="title-slot">
+                {{ title }}
+            </slot>
+        </template>
         <slot></slot>
         <el-form ref="dialogForm" :model="model" :rules="dialogFormRules" class="dialog-form-model" label-width="120px">
             <template v-for="(item, index) in modelItem">

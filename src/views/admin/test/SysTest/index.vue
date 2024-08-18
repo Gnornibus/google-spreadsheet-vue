@@ -1,100 +1,57 @@
 <template>
     <div>
-        <el-button @click="getCacheContent">显示数据表格</el-button>
-        <el-dialog
-            title="动态数据表格"
-            :visible.sync="dialogTableVisible"
-            width="70%">
+        <el-button @click="showDialog">打开对话框</el-button>
+
+        <my-dialog
+            :visible.sync="grid.visible"
+            top="10%"
+            width="90%"
+            @submit="grid.visible = false">
+            <template v-slot:title-slot>
+                <a :href="grid.linkUrl" target="_blank" style="color: inherit; text-decoration: none;">
+                    {{ grid.title }}
+                </a>
+            </template>
             <ag-grid-vue
                 class="ag-theme-alpine"
                 style="width: 100%; height: 400px;"
-                :columnDefs="columnDefs"
-                :rowData="rowData"
-                :gridOptions="gridOptions">
+                :columnDefs="grid.columnDefs"
+                :rowData="grid.rowData"
+                :gridOptions="grid.gridOptions">
             </ag-grid-vue>
-        </el-dialog>
+        </my-dialog>
     </div>
 </template>
-
 <script>
-
-import {
-    getCacheSpreadsheetContent,
-} from "@/api/google-sheet-config-api.js";
+import MyDialog from '@/components/Dialog';
+import { AgGridVue } from 'ag-grid-vue';
 
 export default {
+    components: {
+        MyDialog,
+        AgGridVue
+    },
     data() {
         return {
-            dialogTableVisible: false,
-            gridOptions: {
-                enableRangeSelection: true,
-                enableClipboard: true,
-                sideBar: {
-                    toolPanels: [
-                        {
-                            id: 'columns',
-                            labelDefault: 'Columns',
-                            labelKey: 'columns',
-                            iconKey: 'columns',
-                            toolPanel: 'agColumnsToolPanel',
-                            toolPanelParams: {
-                                suppressRowGroups: true,
-                                suppressValues: true,
-                                suppressPivots: true,
-                                suppressPivotMode: true
-                            }
-                        },
-                        {
-                            id: 'filters',
-                            labelDefault: 'Filters',
-                            labelKey: 'filters',
-                            iconKey: 'filter',
-                            toolPanel: 'agFiltersToolPanel',
-                        }
-                    ],
-                    defaultToolPanel: 'columns'
-                }
-            },
-            columnDefs: [],
-            rowData: []
+            grid: {
+                visible: false,
+                title: '点击查看更多信息',
+                linkUrl: 'https://example.com', // 初始超链接地址
+                columnDefs: [/* 列定义 */],
+                rowData: [/* 数据行 */],
+                gridOptions: {/* 表格选项 */}
+            }
         };
     },
-    mounted() {
-        this.processData([
-            ["日期", "姓名", "地址"], // 标题行
-            ["2021-09-01", "张三", "北京市朝阳区"],
-            ["2021-09-02", "李四", "上海市浦东新区"],
-            ["2021-09-03", "王五", "广州市白云区"]
-        ]);
-    },
     methods: {
-        getCacheContent() {
-            getCacheSpreadsheetContent({"sourceUrl": "15nnoeazZ52Q5HKZBP6c9sOgoVZD24p8Qa-HMLLQrNE4", "sourceSheet": "PA_ALL"}).then(res => {
-                this.processData(res.data);
-            });
-            this.dialogTableVisible = true
+        showDialog() {
+            this.grid.visible = true;
+            this.updateLinkUrl(); // 更新超链接地址
         },
-        processData(data) {
-            if (!data.length) return;
-
-            // 第一行为列定义
-            this.columnDefs = data[0].map(header => ({
-                headerName: header,
-                field: header.toLowerCase(),
-                sortable: true,
-                filter: true,
-                resizable: true
-            }));
-
-            // 剩余行为行数据
-            this.rowData = data.slice(1).map(row => {
-                let rowData = {};
-                row.forEach((cell, index) => {
-                    let fieldName = data[0][index].toLowerCase();
-                    rowData[fieldName] = cell;
-                });
-                return rowData;
-            });
+        updateLinkUrl() {
+            // 根据具体的业务逻辑动态更新 URL
+            // 例如，可以根据 rowData 的内容或其他条件来设置
+            this.grid.linkUrl = 'https://new-url.com'; // 新的 URL 地址
         }
     }
 };
