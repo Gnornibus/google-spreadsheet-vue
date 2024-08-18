@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-button @click="dialogTableVisible = true">显示数据表格</el-button>
+        <el-button @click="getCacheContent">显示数据表格</el-button>
         <el-dialog
             title="动态数据表格"
             :visible.sync="dialogTableVisible"
@@ -17,16 +17,18 @@
 </template>
 
 <script>
-import { AgGridVue } from 'ag-grid-vue';
+
+import {
+    getCacheSpreadsheetContent,
+} from "@/api/google-sheet-config-api.js";
 
 export default {
-    components: {
-        AgGridVue
-    },
     data() {
         return {
             dialogTableVisible: false,
             gridOptions: {
+                enableRangeSelection: true,
+                enableClipboard: true,
                 sideBar: {
                     toolPanels: [
                         {
@@ -59,13 +61,19 @@ export default {
     },
     mounted() {
         this.processData([
-            ["日期", "姓名", "地址", "地址11"], // 标题行
+            ["日期", "姓名", "地址"], // 标题行
             ["2021-09-01", "张三", "北京市朝阳区"],
             ["2021-09-02", "李四", "上海市浦东新区"],
             ["2021-09-03", "王五", "广州市白云区"]
         ]);
     },
     methods: {
+        getCacheContent() {
+            getCacheSpreadsheetContent({"sourceUrl": "15nnoeazZ52Q5HKZBP6c9sOgoVZD24p8Qa-HMLLQrNE4", "sourceSheet": "PA_ALL"}).then(res => {
+                this.processData(res.data);
+            });
+            this.dialogTableVisible = true
+        },
         processData(data) {
             if (!data.length) return;
 

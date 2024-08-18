@@ -3,6 +3,19 @@ import request from '@/common/utils/request'
 let BaseUrl = "/googleSheetConfiguration"
 
 /**
+ * 获取配置列表缓存
+ * @param data
+ * @returns {*}
+ */
+export function getCacheSpreadsheetContent(data) {
+    return request({
+        url: BaseUrl + '/get-cache',
+        method: 'post',
+        data: data,
+    })
+}
+
+/**
  * 列表
  * @param data
  * @returns {*}

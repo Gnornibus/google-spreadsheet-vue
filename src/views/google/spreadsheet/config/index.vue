@@ -47,6 +47,20 @@
             @submit="batchAdd">
             <upload-excel-component :excelData="batchDialogData.excelData"/>
         </my-dialog>
+        <my-dialog
+            :title="grid.title"
+            :visible.sync="grid.visible"
+            top="10%"
+            width="90%"
+            @submit="grid.visible=false">
+            <ag-grid-vue
+                class="ag-theme-alpine"
+                style="width: 100%; height: 400px;"
+                :columnDefs="grid.columnDefs"
+                :rowData="grid.rowData"
+                :gridOptions="grid.gridOptions">
+            </ag-grid-vue>
+        </my-dialog>
     </div>
 </template>
 
@@ -55,6 +69,7 @@ import searchPane from '@/components/SearchPane';
 import tablePane from '@/components/TablePane';
 import MyDialog from '@/components/Dialog';
 import {
+    getCacheSpreadsheetContent,
     deleteBatchGoogleSheetConfig,
     deleteGoogleSheetConfig,
     exportChoseExcelGoogleSheetConfig,
@@ -69,12 +84,12 @@ import {
 import i18n from '@/common/lang';
 import UploadExcelComponent from '@/components/UploadExcel/index.vue';
 import BackToTop from "@/components/BackToTop";
-import {CommonEnum} from "@/common/enum/CommonEnum";
 import ImageUpload from "@/components/Upload/ImageUpload.vue";
+import {AgGridVue} from "ag-grid-vue";
 
 export default {
     name: 'GoogleConfig',
-    components: {ImageUpload, searchPane, tablePane, MyDialog, UploadExcelComponent, BackToTop},
+    components: {AgGridVue, ImageUpload, searchPane, tablePane, MyDialog, UploadExcelComponent, BackToTop},
     // 生命周期-页面创建
     created() {
         // 初始化方法
@@ -115,11 +130,9 @@ export default {
                 },
 
                 // 精准数据输入框
-                decimal: [
-                ],
+                decimal: [],
                 // 数字输入框
-                numbers: [
-                ],
+                numbers: [],
                 // 搜索输入框
                 inputs: [
                     {
@@ -231,11 +244,9 @@ export default {
                     // },
                 ],
                 // 搜索日期框
-                datePickers: [
-                ],
+                datePickers: [],
                 // 搜索时间框
-                timePickers: [
-                ],
+                timePickers: [],
                 // 搜索日期及时间框
                 dateTimePickers: [
                     // {
@@ -384,8 +395,23 @@ export default {
                 // 操作按钮项
                 operation: {
                     label: i18n.t('table.operation'),
-                    width: 80 * 3,
+                    width: 80 * 4,
                     data: [
+                        {
+                            name: "配置数据详情",
+                            type: 'primary',
+                            permission: '040106',
+                            handleRowClick: (index, row) => {
+                                getCacheSpreadsheetContent({
+                                    "sourceUrl": row.sourceUrl,
+                                    "sourceSheet": row.sourceSheet
+                                }).then((res) => {
+                                    this.grid.title = "【来源】：" + row.sourceUrl + "   【页签】：" + row.sourceSheet
+                                    this.processData(res.data)
+                                    this.grid.visible = true;
+                                })
+                            }
+                        },
                         {
                             name: i18n.t('common.btn.infoBtnName'),
                             type: 'primary',
@@ -827,6 +853,42 @@ export default {
                     tableData: [],
                     file: null,
                 },
+            },
+
+            // AgGridVue
+            grid: {
+                visible: false,
+                title: "测试",
+                gridOptions: {
+                    enableRangeSelection: true,
+                    enableClipboard: true,
+                    sideBar: {
+                        toolPanels: [
+                            {
+                                id: 'columns',
+                                labelDefault: 'Columns',
+                                labelKey: 'columns',
+                                iconKey: 'columns',
+                                toolPanel: 'agColumnsToolPanel',
+                                toolPanelParams: {
+                                    suppressRowGroups: true,
+                                    suppressValues: true,
+                                    suppressPivots: true,
+                                    suppressPivotMode: true
+                                }
+                            },
+                            {
+                                id: 'filters',
+                                labelDefault: 'Filters',
+                                labelKey: 'filters',
+                                iconKey: 'filter',
+                                toolPanel: 'agFiltersToolPanel',
+                            }
+                        ],
+                        defaultToolPanel: 'columns'
+                    }
+                },
+                columnDefs: ""
             }
         }
     },
@@ -1008,6 +1070,29 @@ export default {
                     break;
             }
         },
+
+        processData(data) {
+            if (!data.length) return;
+
+            // 第一行为列定义
+            this.grid.columnDefs = data[0].map(header => ({
+                headerName: header,
+                field: header.toLowerCase(),
+                sortable: true,
+                filter: true,
+                resizable: true
+            }));
+
+            // 剩余行为行数据
+            this.grid.rowData = data.slice(1).map(row => {
+                let rowData = {};
+                row.forEach((cell, index) => {
+                    let fieldName = data[0][index].toLowerCase();
+                    rowData[fieldName] = cell;
+                });
+                return rowData;
+            });
+        }
     }
 }
 </script>
