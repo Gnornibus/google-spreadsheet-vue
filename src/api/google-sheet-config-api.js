@@ -3,6 +3,19 @@ import request from '@/common/utils/request'
 let BaseUrl = "/googleSheetConfiguration"
 
 /**
+ * 发起工作簿运算
+ * @param data
+ * @returns {*}
+ */
+export function launchOperation(data) {
+    return request({
+        url: BaseUrl + '/launch-operation',
+        method: 'post',
+        data: data,
+    })
+}
+
+/**
  * 获取配置列表缓存
  * @param data
  * @returns {*}

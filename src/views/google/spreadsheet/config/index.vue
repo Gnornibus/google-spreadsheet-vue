@@ -87,6 +87,7 @@ import BackToTop from "@/components/BackToTop";
 import ImageUpload from "@/components/Upload/ImageUpload.vue";
 import {AgGridVue} from "ag-grid-vue";
 import {deleteSheetOperation} from "../../../../api/google-sheet-remove-api";
+import {launchOperation} from "../../../../api/google-sheet-config-api";
 
 export default {
     name: 'GoogleConfig',
@@ -398,6 +399,30 @@ export default {
                     label: i18n.t('table.operation'),
                     width: 80 * 6,
                     data: [
+                        {
+                            name: "发起",
+                            type: 'primary',
+                            permission: '040106',
+                            handleRowClick: (index, row) => {
+                                this.$confirm("确认要发起运算嘛？" + row.spreadsheetId, i18n.t('common.messageBox.tips'), {
+                                    confirmButtonText: i18n.t('common.btn.confirmBtnName'),
+                                    cancelButtonText: i18n.t('common.btn.cancelBtnName'),
+                                    type: 'warning'
+                                }).then(() => {
+                                    // 确定
+                                    launchOperation({
+                                        ...row
+                                    }).then((res) => {
+                                        if (res.data) {
+                                            this.queryPage()
+                                            this.$message.success(i18n.t('common.success'));
+                                        } else {
+                                            this.$message.error(i18n.t('common.error') + ":" + res.data);
+                                        }
+                                    })
+                                });
+                            }
+                        },
                         {
                             name: "配置",
                             type: 'primary',
