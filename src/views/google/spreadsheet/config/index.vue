@@ -86,6 +86,7 @@ import UploadExcelComponent from '@/components/UploadExcel/index.vue';
 import BackToTop from "@/components/BackToTop";
 import ImageUpload from "@/components/Upload/ImageUpload.vue";
 import {AgGridVue} from "ag-grid-vue";
+import {deleteSheetOperation} from "../../../../api/google-sheet-remove-api";
 
 export default {
     name: 'GoogleConfig',
@@ -395,10 +396,10 @@ export default {
                 // 操作按钮项
                 operation: {
                     label: i18n.t('table.operation'),
-                    width: 80 * 4,
+                    width: 80 * 6,
                     data: [
                         {
-                            name: "配置数据详情",
+                            name: "配置",
                             type: 'primary',
                             permission: '040106',
                             handleRowClick: (index, row) => {
@@ -435,11 +436,37 @@ export default {
                             }
                         },
                         {
+                            name: "清缓",
+                            type: 'danger',
+                            permission: '040104',
+                            handleRowClick: (index, row) => {
+                                this.$confirm("确认要清除缓存嘛？" + row.spreadsheetId, i18n.t('common.messageBox.tips'), {
+                                    confirmButtonText: i18n.t('common.btn.confirmBtnName'),
+                                    cancelButtonText: i18n.t('common.btn.cancelBtnName'),
+                                    type: 'warning'
+                                }).then(() => {
+                                    // 确定
+                                    deleteSheetOperation({
+                                        spreadsheetId: row.sourceUrl,
+                                        sheetName: row.sourceSheet
+                                    }).then((res) => {
+                                        if (res.data) {
+                                            this.queryPage()
+                                            this.$message.success(i18n.t('common.success'));
+                                            this.addDialogData.visible = false;
+                                        } else {
+                                            this.$message.error(i18n.t('common.error') + ":" + res.data);
+                                        }
+                                    })
+                                });
+                            }
+                        },
+                        {
                             name: i18n.t('common.btn.deleteBtnName'),
                             type: 'danger',
                             permission: '040104',
                             handleRowClick: (index, row) => {
-                                this.$confirm(i18n.t('common.messageBox.delete.title') + row.name, i18n.t('common.messageBox.tips'), {
+                                this.$confirm(i18n.t('common.messageBox.delete.title') + row.spreadsheetId, i18n.t('common.messageBox.tips'), {
                                     confirmButtonText: i18n.t('common.btn.confirmBtnName'),
                                     cancelButtonText: i18n.t('common.btn.cancelBtnName'),
                                     type: 'warning'
