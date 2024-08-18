@@ -1,53 +1,43 @@
 <template>
-    <ag-grid-vue
-        class="ag-theme-alpine"
-        style="width: 100%; height: 600px;"
-        :columnDefs="columnDefs"
-        :rowData="rowData">
-    </ag-grid-vue>
+    <div>
+        <el-button @click="dialogTableVisible = true">显示收货地址</el-button>
+        <el-dialog
+            title="收货地址"
+            :visible.sync="dialogTableVisible"
+            width="70%">
+            <ag-grid-vue
+                class="ag-theme-alpine"
+                style="width: 100%; height: 400px;"
+                :columnDefs="columnDefs"
+                :rowData="rowData"
+                :gridOptions="gridOptions">
+            </ag-grid-vue>
+        </el-dialog>
+    </div>
 </template>
 
 <script>
-import {AgGridVue} from "ag-grid-vue";
+import { AgGridVue } from 'ag-grid-vue';
 
 export default {
-    name: "AgTable",
     components: {
-        AgGridVue,
+        AgGridVue
     },
     data() {
         return {
-            gridApi: null,
+            dialogTableVisible: false,
+            gridOptions: {},
             columnDefs: [
-                {
-                    headerName: "名称",
-                    field: "title",
-                },
-                {
-                    headerName: "网址",
-                    field: "url",
-                },
-                {
-                    headerName: "分类",
-                    field: "catalog",
-                    resizable: true,
-                },
-                {
-                    headerName: "PR",
-                    field: "pr",
-                    resizable: true,
-                },
+                { headerName: "日期", field: "date", sortable: true, filter: true },
+                { headerName: "姓名", field: "name", sortable: true, filter: true },
+                { headerName: "地址", field: "address", sortable: true, filter: true }
             ],
-            //需要显示的数据
             rowData: [
-                {title: "谷歌", url: "www.google", catalog: "搜索引擎", pr: 10},
-                {title: "微软", url: "www.microsoft.com", catalog: "操作系", pr: 10},
-                {title: "ITXST", url: "www.itxst.com", catalog: "小站", pr: 1},
-                {title: "淘宝", url: "www.taobao.com", catalog: "电商", pr: 8},
-            ],
+                { date: "2021-09-01", name: "张三", address: "北京市朝阳区" },
+                { date: "2021-09-02", name: "李四", address: "上海市浦东新区" },
+                { date: "2021-09-03", name: "王五", address: "广州市白云区" }
+            ]
         };
     }
 };
 </script>
-
-<style lang="less" scoped></style>

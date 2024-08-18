@@ -5,7 +5,7 @@ module.exports = {
      * @type {string} title
      * 系统标题
      */
-    systemName: '炘星体育助手系统',
+    systemName: '谷歌试算表服务系统',
 
     /**
      * 网页地址的名称前缀
@@ -13,14 +13,14 @@ module.exports = {
      * @type {string} title
      * 系统标题
      */
-    htmlTitle: '炘星体育',
+    htmlTitle: '谷歌试算表',
 
     /**
      * 网站所有者
      *
      * @type {string} title
      */
-    author: '厦门炘星体育发展有限公司',
+    author: '谷歌试算表服务有限公司',
 
     /**
      * @type {boolean} true | false

@@ -39,8 +39,8 @@ export default {
     brushOrder: '订单管理',
     brushOrderFeedback: '订单反馈管理',
     // 教练管理
-    coach: '教练管理',
-    sportCoach: '教练管理',
+    spreadsheet: '试算表管理',
+    googleSheetConfig: '配置管理',
     // 项目管理
     project: '项目管理',
     sportProjectClass: '项目分类',

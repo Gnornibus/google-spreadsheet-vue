@@ -3,7 +3,7 @@
         <span v-if="$store.state.app.device==='desktop'">
             &copy;2023 {{ systemName }}-版本:1.0.0 <br>
             <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">
-                闽ICP备2024039492号-2
+                闽ICP备20240818111号-2
             </a>
             <br>
             <a href="https://gitee.com/su-binrong" style="font-size: 13px;" target="_blank">
@@ -14,7 +14,7 @@
             &copy;2023 {{ systemName }}-版本:1.0.0
             <br>
             <a href="https://beian.miit.gov.cn/#/Integrated/index" style="font-size: 13px;" target="_blank">
-                闽ICP备2024039492号-2
+                闽ICP备20240818111号-2
             </a>
             <br>
             <a href="https://gitee.com/su-binrong" style="font-size: 10px;" target="_blank">

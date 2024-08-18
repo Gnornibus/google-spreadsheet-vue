@@ -407,7 +407,7 @@ export default {
                     {
                         disabled: true,
                         required: false,
-                        type: 'number',
+                        type: 'input',
                         length: 11,
                         key: 'id',
                         name: i18n.t('view.sysDict.id')
@@ -594,7 +594,7 @@ export default {
                         required: true,
                         type: 'dataSelect',
                         key: 'dictId',
-                        name: i18n.t('view.sysDictItem.dictId'),
+                        name: i18n.t('view.sysDict.name'),
                         dataSelect: {
                             url: 'sys-dict'
                         }
@@ -643,16 +643,16 @@ export default {
                     {
                         disabled: true,
                         required: false,
-                        type: 'number',
-                        length: 11,
+                        type: 'input',
+                        length: 64,
                         key: 'id',
                         name: i18n.t('view.sysDictItem.id')
                     },
                     {
                         disabled: true,
                         required: false,
-                        type: 'number',
-                        length: 11,
+                        type: 'input',
+                        length: 64,
                         key: 'dictId',
                         name: i18n.t('view.sysDictItem.dictId')
                     },

@@ -31,20 +31,7 @@ const asyncRouterComponents = {
     // 测试管理
     sysTest: () => import('@/views/admin/test/SysTest'),
     // 教练管理
-    sportCoach: () => import('@/views/sport/coach/SportCoach'),
-    // 项目管理
-    sportProjectClass: () => import('@/views/sport/project/SportProjectClass'),
-    sportProject: () => import('@/views/sport/project/SportProject'),
-    // 成绩管理
-    sportScore: () => import('@/views/sport/score/SportScore'),
-    sportScoreRange: () => import('@/views/sport/score/SportScoreRange'),
-    // 媒体管理
-    sportVideo: () => import('@/views/sport/media/SportVideo'),
-    sportVideoHistory: () => import('@/views/sport/media/SportVideoHistory'),
-    // 会员管理
-    sportMemberType: () => import('@/views/sport/member/SportMemberType'),
-    sportMemberKey: () => import('@/views/sport/member/SportMemberKey'),
-    sportOrder: () => import('@/views/sport/member/SportOrder'),
+    googleSheetConfig: () => import('@/views/google/spreadsheet/config'),
 }
 
 const state = {

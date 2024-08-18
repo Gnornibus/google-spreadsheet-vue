@@ -20,19 +20,7 @@ import BasicBtnLang from "@/common/lang/view/zh/BasicBtnLang";
 import BasicToolLang from "@/common/lang/view/zh/BasicToolLang";
 import BasicMessageBoxLang from "@/common/lang/view/zh/BasicMessageBoxLang";
 import BasicTableLang from "@/common/lang/view/zh/BasicTableLang";
-import SportChatInfoLang from "@/common/lang/view/zh/Sport/SportChatInfoLang"
-import SportChatLang from "@/common/lang/view/zh/Sport/SportChatLang"
-import SportCoachLang from "@/common/lang/view/zh/Sport/SportCoachLang"
-import SportMemberKeyLang from "@/common/lang/view/zh/Sport/SportMemberKeyLang"
-import SportMemberTypeLang from "@/common/lang/view/zh/Sport/SportMemberTypeLang"
-import SportOrderLang from "@/common/lang/view/zh/Sport/SportOrderLang"
-import SportProjectClassLang from "@/common/lang/view/zh/Sport/SportProjectClassLang"
-import SportProjectLang from "@/common/lang/view/zh/Sport/SportProjectLang"
-import SportScoreInfoLang from "@/common/lang/view/zh/Sport/SportScoreInfoLang"
-import SportScoreLang from "@/common/lang/view/zh/Sport/SportScoreLang"
-import SportScoreRangeLang from "@/common/lang/view/zh/Sport/SportScoreRangeLang"
-import SportVideoHistoryLang from "@/common/lang/view/zh/Sport/SportVideoHistoryLang"
-import SportVideoLang from "@/common/lang/view/zh/Sport/SportVideoLang"
+import GoogleConfigLang from "@/common/lang/view/zh/Google/GoogleSheetConfigLang"
 
 export default {
     enum: {
@@ -117,18 +105,6 @@ export default {
         ...SysTenantLang,
         ...SysUserLang,
         ...CommonViewLang,
-        ...SportChatInfoLang,
-        ...SportChatLang,
-        ...SportCoachLang,
-        ...SportMemberKeyLang,
-        ...SportMemberTypeLang,
-        ...SportOrderLang,
-        ...SportProjectClassLang,
-        ...SportProjectLang,
-        ...SportScoreInfoLang,
-        ...SportScoreLang,
-        ...SportScoreRangeLang,
-        ...SportVideoHistoryLang,
-        ...SportVideoLang,
+        ...GoogleConfigLang,
     },
 }

@@ -18,21 +18,6 @@
             :width="dialogWidth"
             @close="queryPage()"
             @submit="add">
-            <image-upload
-                action-url="avatar"
-                :upload-auto-upload="true"
-                style="text-align: center"
-                @uploadSuccess="handleAddUploadSuccess">
-                <el-image v-if="addDialogData.model.avatarUrl" :src="addDialogData.model.avatarUrl | imageFileFilter"
-                          class="dialog-upload-image"
-                          lazy/>
-                <div v-else>
-                    <i class="el-icon-upload"></i>
-                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em>
-                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-                    </div>
-                </div>
-            </image-upload>
         </my-dialog>
         <my-dialog
             :model="modifyDialogData.model"
@@ -40,23 +25,9 @@
             :title="$t('common.dialog.dialogModifyTitle')"
             :visible.sync="modifyDialogData.visible"
             :width="dialogWidth"
+            :required="false"
             @close="queryPage()"
             @submit="modify">
-            <image-upload
-                action-url="avatar"
-                :upload-auto-upload="true"
-                style="text-align: center"
-                @uploadSuccess="handleModifyUploadSuccess">
-                <el-image v-if="modifyDialogData.model.avatarUrl" :src="modifyDialogData.model.avatarUrl | imageFileFilter"
-                          class="dialog-upload-image"
-                          lazy/>
-                <div v-else>
-                    <i class="el-icon-upload"></i>
-                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em>
-                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-                    </div>
-                </div>
-            </image-upload>
         </my-dialog>
         <my-dialog
             :componentsDisabled="true"
@@ -84,17 +55,17 @@ import searchPane from '@/components/SearchPane';
 import tablePane from '@/components/TablePane';
 import MyDialog from '@/components/Dialog';
 import {
-    deleteBatchSportCoach,
-    deleteSportCoach,
-    exportChoseExcelSportCoach,
-    exportExcelSportCoach,
-    exportParamExcelSportCoach,
-    exportTemplateSportCoach,
-    queryPageSportCoach,
-    saveBatchSportCoach,
-    saveSportCoach,
-    selectSportCoach,
-} from "@/api/sport-coach-api";
+    deleteBatchGoogleSheetConfig,
+    deleteGoogleSheetConfig,
+    exportChoseExcelGoogleSheetConfig,
+    exportExcelGoogleSheetConfig,
+    exportParamExcelGoogleSheetConfig,
+    exportTemplateGoogleSheetConfig,
+    queryPageGoogleSheetConfig,
+    saveBatchGoogleSheetConfig,
+    saveGoogleSheetConfig,
+    selectGoogleSheetConfig,
+} from "@/api/google-sheet-config-api.js";
 import i18n from '@/common/lang';
 import UploadExcelComponent from '@/components/UploadExcel/index.vue';
 import BackToTop from "@/components/BackToTop";
@@ -102,7 +73,7 @@ import {CommonEnum} from "@/common/enum/CommonEnum";
 import ImageUpload from "@/components/Upload/ImageUpload.vue";
 
 export default {
-    name: 'SportCoach',
+    name: 'GoogleConfig',
     components: {ImageUpload, searchPane, tablePane, MyDialog, UploadExcelComponent, BackToTop},
     // 生命周期-页面创建
     created() {
@@ -128,7 +99,6 @@ export default {
                     addBtn: {
                         permission: '040102',
                         handleClick: () => {
-                            this.$set(this.addDialogData.model, "state", CommonEnum.enableDisable.enable)
                             this.addDialogData.visible = true
                         },
                     },
@@ -145,91 +115,137 @@ export default {
                 },
 
                 // 精准数据输入框
-                decimal: [],
+                decimal: [
+                ],
                 // 数字输入框
                 numbers: [
-                    {
-                        key: 'id',
-                        length: 11,
-                        name: i18n.t('view.sportCoach.id'),
-                    },
                 ],
                 // 搜索输入框
                 inputs: [
                     {
-                        key: 'userId',
-                        length: 11,
-                        name: i18n.t('view.sportCoach.userId'),
+                        key: 'id',
+                        length: 64,
+                        name: i18n.t('view.googleSheetConfig.id'),
                     },
                     {
-                        key: 'name',
-                        length: 10,
-                        name: i18n.t('view.sportCoach.name'),
+                        key: 'spreadsheetId',
+                        length: 128,
+                        name: i18n.t('view.googleSheetConfig.spreadsheetId'),
                     },
                     {
-                        key: 'avatarUrl',
+                        key: 'remark',
                         length: 255,
-                        name: i18n.t('view.sportCoach.avatarUrl'),
+                        name: i18n.t('view.googleSheetConfig.remark'),
                     },
                     {
-                        key: 'tags',
+                        key: 'outputHeader',
+                        length: 8,
+                        name: i18n.t('view.googleSheetConfig.outputHeader'),
+                    },
+                    {
+                        key: 'ignoreDrive',
+                        length: 8,
+                        name: i18n.t('view.googleSheetConfig.ignoreDrive'),
+                    },
+                    {
+                        key: 'sourceUrl',
                         length: 255,
-                        name: i18n.t('view.sportCoach.tags'),
+                        name: i18n.t('view.googleSheetConfig.sourceUrl'),
                     },
                     {
-                        key: 'content',
+                        key: 'sourceSheet',
                         length: 255,
-                        name: i18n.t('view.sportCoach.content'),
+                        name: i18n.t('view.googleSheetConfig.sourceSheet'),
                     },
                     {
-                        key: 'creUserName',
-                        length: 10,
-                        name: i18n.t('view.sportCoach.creUserName'),
+                        key: 'dataRange',
+                        length: 255,
+                        name: i18n.t('view.googleSheetConfig.dataRange'),
                     },
                     {
-                        key: 'updUserName',
-                        length: 10,
-                        name: i18n.t('view.sportCoach.updUserName'),
+                        key: 'judgeCondition',
+                        length: 255,
+                        name: i18n.t('view.googleSheetConfig.judgeCondition'),
+                    },
+                    {
+                        key: 'compareField',
+                        length: 255,
+                        name: i18n.t('view.googleSheetConfig.compareField'),
+                    },
+                    {
+                        key: 'outputField',
+                        length: 255,
+                        name: i18n.t('view.googleSheetConfig.outputField'),
+                    },
+                    {
+                        key: 'outputMode',
+                        length: 255,
+                        name: i18n.t('view.googleSheetConfig.outputMode'),
+                    },
+                    {
+                        key: 'cron',
+                        length: 255,
+                        name: i18n.t('view.googleSheetConfig.cron'),
+                    },
+                    {
+                        key: 'targetUrl',
+                        length: 255,
+                        name: i18n.t('view.googleSheetConfig.targetUrl'),
+                    },
+                    {
+                        key: 'targetSheet',
+                        length: 255,
+                        name: i18n.t('view.googleSheetConfig.targetSheet'),
+                    },
+                    {
+                        key: 'targetStart',
+                        length: 255,
+                        name: i18n.t('view.googleSheetConfig.targetStart'),
                     },
                 ],
                 // 搜索下拉框
                 selects: [
                     {
-                        key: 'state',
-                        name: i18n.t('view.sportCoach.state'),
+                        key: 'status',
+                        length: 32,
+                        name: i18n.t('view.googleSheetConfig.status'),
                         dictSelect: {
-                            dictCode: 'sys.enable.disable'
+                            dictCode: 'google.sheet.configuration.status'
                         }
                     },
-                    {
-                        key: 'creUserId',
-                        name: i18n.t('view.sportCoach.creUserName'),
-                        dataSelect: {
-                            url: 'sys-user',
-                        },
-                    },
-                    {
-                        key: 'updUserId',
-                        name: i18n.t('view.sportCoach.updUserName'),
-                        dataSelect: {
-                            url: 'sys-user',
-                        },
-                    },
+                    // {
+                    //     key: 'creUserId',
+                    //     length: 32,
+                    //     name: i18n.t('view.googleSheetConfig.creUserId'),
+                    //     dataSelect: {
+                    //         url: 'sys-user',
+                    //     },
+                    // },
+                    // {
+                    //     key: 'updUserId',
+                    //     length: 32,
+                    //     name: i18n.t('view.googleSheetConfig.updUserId'),
+                    //     dataSelect: {
+                    //         url: 'sys-user',
+                    //     },
+                    // },
                 ],
                 // 搜索日期框
-                datePickers: [],
+                datePickers: [
+                ],
                 // 搜索时间框
-                timePickers: [],
+                timePickers: [
+                ],
                 // 搜索日期及时间框
                 dateTimePickers: [
-                    {
-                        key: 'creTime',
-                        name: i18n.t('view.sportCoach.creTime'),
-                    },
-                    {
-                        key: 'updTime',
-                        name: i18n.t('view.sportCoach.updTime'),
-                    },
+                    // {
+                    //     key: 'creTime',
+                    //     name: i18n.t('view.googleSheetConfig.creTime'),
+                    // },
+                    // {
+                    //     key: 'updTime',
+                    //     name: i18n.t('view.googleSheetConfig.updTime'),
+                    // },
                 ],
             },
 
@@ -243,71 +259,112 @@ export default {
                 columns: [
                     {
                         key: 'id',
-                        label: i18n.t('view.sportCoach.id'),
+                        label: i18n.t('view.googleSheetConfig.id'),
                         sortable: true,
                     },
                     {
-                        key: 'userName',
-                        label: i18n.t('view.sportCoach.userName'),
+                        key: 'spreadsheetId',
+                        label: i18n.t('view.googleSheetConfig.spreadsheetId'),
                         sortable: true,
                     },
                     {
-                        key: 'name',
-                        label: i18n.t('view.sportCoach.name'),
+                        key: 'statusName',
+                        label: i18n.t('view.googleSheetConfig.status'),
                         sortable: true,
                     },
                     {
-                        width: 120,
-                        key: 'avatarUrl',
-                        label: i18n.t('view.sportCoach.avatarUrl'),
-                        sortable: true,
-                        isImage: true,
-                    },
-                    {
-                        key: 'tags',
-                        label: i18n.t('view.sportCoach.tags'),
+                        key: 'remark',
+                        label: i18n.t('view.googleSheetConfig.remark'),
                         sortable: true,
                     },
+                    // {
+                    //     key: 'creUserName',
+                    //     label: i18n.t('view.googleSheetConfig.creUserName'),
+                    //     sortable: true,
+                    // },
+                    // {
+                    //     width: 160,
+                    //     key: 'creTime',
+                    //     label: i18n.t('view.googleSheetConfig.creTime'),
+                    //     sortable: true,
+                    // },
+                    // {
+                    //     key: 'updUserName',
+                    //     label: i18n.t('view.googleSheetConfig.updUserName'),
+                    //     sortable: true,
+                    // },
+                    // {
+                    //     width: 160,
+                    //     key: 'updTime',
+                    //     label: i18n.t('view.googleSheetConfig.updTime'),
+                    //     sortable: true,
+                    // },
                     {
-                        key: 'content',
-                        label: i18n.t('view.sportCoach.content'),
-                        sortable: true,
-                    },
-                    {
-                        key: 'state',
-                        label: i18n.t('view.sportCoach.state'),
-                        sortable: true,
-                        isSpecial: function (value) {
-                            switch (value) {
-                                case "0":
-                                    return i18n.t('enum.state.0');
-                                case "1":
-                                    return i18n.t('enum.state.1');
-                                default:
-                                    return i18n.t('enum.unknown');
-                            }
-                        },
-                    },
-                    {
-                        key: 'creUserName',
-                        label: i18n.t('view.sportCoach.creUserName'),
+                        key: 'outputHeader',
+                        label: i18n.t('view.googleSheetConfig.outputHeader'),
                         sortable: true,
                     },
                     {
-                        width: 160,
-                        key: 'creTime',
-                        label: i18n.t('view.sportCoach.creTime'),
+                        width: 150,
+                        key: 'ignoreDrive',
+                        label: i18n.t('view.googleSheetConfig.ignoreDrive'),
                         sortable: true,
                     },
                     {
-                        key: 'updUserName',
-                        label: i18n.t('view.sportCoach.updUserName'),
+                        width: 350,
+                        key: 'sourceUrl',
+                        label: i18n.t('view.googleSheetConfig.sourceUrl'),
                         sortable: true,
                     },
                     {
-                        width: 160,
-                        key: 'updTime',
-                        label: i18n.t('view.sportCoach.updTime'),
+                        key: 'sourceSheet',
+                        label: i18n.t('view.googleSheetConfig.sourceSheet'),
+                        sortable: true,
+                    },
+                    {
+                        key: 'dataRange',
+                        label: i18n.t('view.googleSheetConfig.dataRange'),
+                        sortable: true,
+                    },
+                    {
+                        key: 'judgeCondition',
+                        label: i18n.t('view.googleSheetConfig.judgeCondition'),
+                        sortable: true,
+                    },
+                    {
+                        key: 'compareField',
+                        label: i18n.t('view.googleSheetConfig.compareField'),
+                        sortable: true,
+                    },
+                    {
+                        key: 'outputField',
+                        label: i18n.t('view.googleSheetConfig.outputField'),
+                        sortable: true,
+                    },
+                    {
+                        key: 'outputMode',
+                        label: i18n.t('view.googleSheetConfig.outputMode'),
+                        sortable: true,
+                    },
+                    {
+                        key: 'cron',
+                        label: i18n.t('view.googleSheetConfig.cron'),
+                        sortable: true,
+                    },
+                    {
+                        width: 350,
+                        key: 'targetUrl',
+                        label: i18n.t('view.googleSheetConfig.targetUrl'),
+                        sortable: true,
+                    },
+                    {
+                        key: 'targetSheet',
+                        label: i18n.t('view.googleSheetConfig.targetSheet'),
+                        sortable: true,
+                    },
+                    {
+                        key: 'targetStart',
+                        label: i18n.t('view.googleSheetConfig.targetStart'),
                         sortable: true,
                     },
                 ],
@@ -334,7 +391,7 @@ export default {
                             type: 'primary',
                             permission: '040106',
                             handleRowClick: (index, row) => {
-                                selectSportCoach({id: row.id}).then((res) => {
+                                selectGoogleSheetConfig({id: row.id}).then((res) => {
                                     this.infoDialogData.model = res.data
                                     this.infoDialogData.visible = true;
                                 })
@@ -345,8 +402,7 @@ export default {
                             type: 'primary',
                             permission: '040102,040106',
                             handleRowClick: (index, row) => {
-                                selectSportCoach({id: row.id}).then((res) => {
-                                    this.$set(this.modifyDialogData.model, "state", CommonEnum.enableDisable.enable)
+                                selectGoogleSheetConfig({id: row.id}).then((res) => {
                                     this.modifyDialogData.model = res.data
                                     this.modifyDialogData.visible = true;
                                 })
@@ -363,7 +419,7 @@ export default {
                                     type: 'warning'
                                 }).then(() => {
                                     // 确定
-                                    deleteSportCoach({id: row.id}).then((res) => {
+                                    deleteGoogleSheetConfig({id: row.id}).then((res) => {
                                         if (res.data) {
                                             this.queryPage()
                                             this.$message.success(i18n.t('common.success'));
@@ -429,52 +485,100 @@ export default {
                 visible: false,
                 modelItem: [
                     {
-                        type: 'dataSelect',
-                        key: 'userId',
-                        name: i18n.t('view.sportCoach.userName'),
-                        dataSelect: {
-                            url: 'sys-user'
-                        }
-                    },
-                    {
                         type: 'input',
-                        length: 10,
-                        key: 'name',
-                        name: i18n.t('view.sportCoach.name'),
-                    },
-                    {
-                        disabled: true,
-                        type: 'input',
-                        length: 255,
-                        key: 'avatarUrl',
-                        name: i18n.t('view.sportCoach.avatarUrl'),
-                    },
-                    {
-                        type: 'input',
-                        length: 255,
-                        key: 'tags',
-                        name: i18n.t('view.sportCoach.tags'),
-                    },
-                    {
-                        type: 'input',
-                        length: 255,
-                        key: 'content',
-                        name: i18n.t('view.sportCoach.content'),
+                        length: 128,
+                        key: 'spreadsheetId',
+                        name: i18n.t('view.googleSheetConfig.spreadsheetId'),
                     },
                     {
                         type: 'select',
-                        key: 'state',
-                        name: i18n.t('view.sportCoach.state'),
-                        options: [
-                            {
-                                value: "0",
-                                name: i18n.t('enum.state.0'),
-                            },
-                            {
-                                value: "1",
-                                name: i18n.t('enum.state.1'),
-                            },
-                        ],
+                        length: 32,
+                        key: 'status',
+                        name: i18n.t('view.googleSheetConfig.status'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'remark',
+                        name: i18n.t('view.googleSheetConfig.remark'),
+                    },
+                    {
+                        type: 'input',
+                        length: 8,
+                        key: 'outputHeader',
+                        name: i18n.t('view.googleSheetConfig.outputHeader'),
+                    },
+                    {
+                        type: 'input',
+                        length: 8,
+                        key: 'ignoreDrive',
+                        name: i18n.t('view.googleSheetConfig.ignoreDrive'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'sourceUrl',
+                        name: i18n.t('view.googleSheetConfig.sourceUrl'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'sourceSheet',
+                        name: i18n.t('view.googleSheetConfig.sourceSheet'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'dataRange',
+                        name: i18n.t('view.googleSheetConfig.dataRange'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'judgeCondition',
+                        name: i18n.t('view.googleSheetConfig.judgeCondition'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'compareField',
+                        name: i18n.t('view.googleSheetConfig.compareField'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'outputField',
+                        name: i18n.t('view.googleSheetConfig.outputField'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'outputMode',
+                        name: i18n.t('view.googleSheetConfig.outputMode'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'cron',
+                        name: i18n.t('view.googleSheetConfig.cron'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'targetUrl',
+                        name: i18n.t('view.googleSheetConfig.targetUrl'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'targetSheet',
+                        name: i18n.t('view.googleSheetConfig.targetSheet'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'targetStart',
+                        name: i18n.t('view.googleSheetConfig.targetStart'),
                     },
                 ],
                 model: {},
@@ -484,59 +588,100 @@ export default {
                 visible: false,
                 modelItem: [
                     {
-                        disabled: true,
-                        type: 'number',
-                        length: 11,
-                        key: 'id',
-                        name: i18n.t('view.sportCoach.id'),
-                    },
-                    {
-                        type: 'dataSelect',
-                        key: 'userId',
-                        name: i18n.t('view.sportCoach.userName'),
-                        dataSelect: {
-                            url: 'sys-user'
-                        }
+                        type: 'input',
+                        length: 128,
+                        key: 'spreadsheetId',
+                        name: i18n.t('view.googleSheetConfig.spreadsheetId'),
                     },
                     {
                         type: 'input',
-                        length: 10,
-                        key: 'name',
-                        name: i18n.t('view.sportCoach.name'),
-                    },
-                    {
-                        disabled: true,
-                        type: 'input',
-                        length: 255,
-                        key: 'avatarUrl',
-                        name: i18n.t('view.sportCoach.avatarUrl'),
+                        length: 32,
+                        key: 'status',
+                        name: i18n.t('view.googleSheetConfig.status'),
                     },
                     {
                         type: 'input',
                         length: 255,
-                        key: 'tags',
-                        name: i18n.t('view.sportCoach.tags'),
+                        key: 'remark',
+                        name: i18n.t('view.googleSheetConfig.remark'),
+                    },
+                    {
+                        type: 'input',
+                        length: 8,
+                        key: 'outputHeader',
+                        name: i18n.t('view.googleSheetConfig.outputHeader'),
+                    },
+                    {
+                        type: 'input',
+                        length: 8,
+                        key: 'ignoreDrive',
+                        name: i18n.t('view.googleSheetConfig.ignoreDrive'),
                     },
                     {
                         type: 'input',
                         length: 255,
-                        key: 'content',
-                        name: i18n.t('view.sportCoach.content'),
+                        key: 'sourceUrl',
+                        name: i18n.t('view.googleSheetConfig.sourceUrl'),
                     },
                     {
-                        type: 'select',
-                        key: 'state',
-                        name: i18n.t('view.sportCoach.state'),
-                        options: [
-                            {
-                                value: "0",
-                                name: i18n.t('enum.state.0'),
-                            },
-                            {
-                                value: "1",
-                                name: i18n.t('enum.state.1'),
-                            },
-                        ],
+                        type: 'input',
+                        length: 255,
+                        key: 'sourceSheet',
+                        name: i18n.t('view.googleSheetConfig.sourceSheet'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'dataRange',
+                        name: i18n.t('view.googleSheetConfig.dataRange'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'judgeCondition',
+                        name: i18n.t('view.googleSheetConfig.judgeCondition'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'compareField',
+                        name: i18n.t('view.googleSheetConfig.compareField'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'outputField',
+                        name: i18n.t('view.googleSheetConfig.outputField'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'outputMode',
+                        name: i18n.t('view.googleSheetConfig.outputMode'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'cron',
+                        name: i18n.t('view.googleSheetConfig.cron'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'targetUrl',
+                        name: i18n.t('view.googleSheetConfig.targetUrl'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'targetSheet',
+                        name: i18n.t('view.googleSheetConfig.targetSheet'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'targetStart',
+                        name: i18n.t('view.googleSheetConfig.targetStart'),
                     },
                 ],
                 model: {},
@@ -546,89 +691,128 @@ export default {
                 visible: false,
                 modelItem: [
                     {
-                        type: 'number',
-                        length: 11,
+                        type: 'input',
+                        length: 64,
                         key: 'id',
-                        name: i18n.t('view.sportCoach.id'),
+                        name: i18n.t('view.googleSheetConfig.id'),
                     },
                     {
                         type: 'input',
-                        length: 11,
-                        key: 'userId',
-                        name: i18n.t('view.sportCoach.userName'),
+                        length: 128,
+                        key: 'spreadsheetId',
+                        name: i18n.t('view.googleSheetConfig.spreadsheetId'),
                     },
                     {
                         type: 'input',
-                        length: 10,
-                        key: 'name',
-                        name: i18n.t('view.sportCoach.name'),
-                    },
-                    {
-                        type: 'input',
-                        length: 255,
-                        key: 'avatarUrl',
-                        name: i18n.t('view.sportCoach.avatarUrl'),
+                        length: 32,
+                        key: 'status',
+                        name: i18n.t('view.googleSheetConfig.status'),
                     },
                     {
                         type: 'input',
                         length: 255,
-                        key: 'tags',
-                        name: i18n.t('view.sportCoach.tags'),
+                        key: 'remark',
+                        name: i18n.t('view.googleSheetConfig.remark'),
                     },
                     {
                         type: 'input',
-                        length: 255,
-                        key: 'content',
-                        name: i18n.t('view.sportCoach.content'),
-                    },
-                    {
-                        type: 'select',
-                        key: 'state',
-                        name: i18n.t('view.sportCoach.state'),
-                        options: [
-                            {
-                                value: "0",
-                                name: i18n.t('enum.state.0'),
-                            },
-                            {
-                                value: "1",
-                                name: i18n.t('enum.state.1'),
-                            },
-                        ],
-                    },
-                    {
-                        type: 'number',
-                        length: 11,
+                        length: 32,
                         key: 'creUserId',
-                        name: i18n.t('view.sportCoach.creUserId'),
-                    },
-                    {
-                        type: 'input',
-                        length: 10,
-                        key: 'creUserName',
-                        name: i18n.t('view.sportCoach.creUserName'),
+                        name: i18n.t('view.googleSheetConfig.creUserId'),
                     },
                     {
                         type: 'datetime',
                         key: 'creTime',
-                        name: i18n.t('view.sportCoach.creTime'),
-                    },
-                    {
-                        type: 'number',
-                        length: 11,
-                        key: 'updUserId',
-                        name: i18n.t('view.sportCoach.updUserId'),
+                        name: i18n.t('view.googleSheetConfig.creTime'),
                     },
                     {
                         type: 'input',
-                        length: 10,
-                        key: 'updUserName',
-                        name: i18n.t('view.sportCoach.updUserName'),
+                        length: 32,
+                        key: 'updUserId',
+                        name: i18n.t('view.googleSheetConfig.updUserId'),
                     },
                     {
                         type: 'datetime',
                         key: 'updTime',
-                        name: i18n.t('view.sportCoach.updTime'),
+                        name: i18n.t('view.googleSheetConfig.updTime'),
+                    },
+                    {
+                        type: 'input',
+                        length: 8,
+                        key: 'outputHeader',
+                        name: i18n.t('view.googleSheetConfig.outputHeader'),
+                    },
+                    {
+                        type: 'input',
+                        length: 8,
+                        key: 'ignoreDrive',
+                        name: i18n.t('view.googleSheetConfig.ignoreDrive'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'sourceUrl',
+                        name: i18n.t('view.googleSheetConfig.sourceUrl'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'sourceSheet',
+                        name: i18n.t('view.googleSheetConfig.sourceSheet'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'dataRange',
+                        name: i18n.t('view.googleSheetConfig.dataRange'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'judgeCondition',
+                        name: i18n.t('view.googleSheetConfig.judgeCondition'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'compareField',
+                        name: i18n.t('view.googleSheetConfig.compareField'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'outputField',
+                        name: i18n.t('view.googleSheetConfig.outputField'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'outputMode',
+                        name: i18n.t('view.googleSheetConfig.outputMode'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'cron',
+                        name: i18n.t('view.googleSheetConfig.cron'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'targetUrl',
+                        name: i18n.t('view.googleSheetConfig.targetUrl'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'targetSheet',
+                        name: i18n.t('view.googleSheetConfig.targetSheet'),
+                    },
+                    {
+                        type: 'input',
+                        length: 255,
+                        key: 'targetStart',
+                        name: i18n.t('view.googleSheetConfig.targetStart'),
                     },
                 ],
                 model: {},
@@ -690,7 +874,7 @@ export default {
                 cancelButtonText: i18n.t('common.btn.cancelBtnName'),
                 type: 'warning'
             }).then(() => {
-                saveSportCoach(data).then((res) => {
+                saveGoogleSheetConfig(data).then((res) => {
                     if (res.data) {
                         this.$message.success(i18n.t('common.success'));
                         this.modifyDialogData.visible = false;
@@ -710,7 +894,7 @@ export default {
             this.dataSource.loading = true;
             try {
                 const {pagination, sort} = this.dataSource;
-                const res = await queryPageSportCoach({...pagination, ...sort, ...this.filterData.listQuery});
+                const res = await queryPageGoogleSheetConfig({...pagination, ...sort, ...this.filterData.listQuery});
                 const {records, size, current, total} = res.data;
                 this.dataSource.data = records;
                 this.dataSource.pagination.size = records.length > 0 ? size : 10;
@@ -732,7 +916,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 // 确定
-                saveSportCoach(data).then((res) => {
+                saveGoogleSheetConfig(data).then((res) => {
                     if (res.data) {
                         this.queryPage()
                         this.$message.success(i18n.t('common.success'));
@@ -749,7 +933,7 @@ export default {
         // 批量新增
         batchAdd() {
             try {
-                saveBatchSportCoach(this.batchDialogData.excelData.file).then((res) => {
+                saveBatchGoogleSheetConfig(this.batchDialogData.excelData.file).then((res) => {
                     if (res.data) {
                         this.queryPage();
                         this.$message.success(i18n.t('common.success'));
@@ -772,7 +956,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 // 确定
-                deleteBatchSportCoach(this.selected).then((res) => {
+                deleteBatchGoogleSheetConfig(this.selected).then((res) => {
                     if (res.data) {
                         this.queryPage()
                         this.$message.success(i18n.t('common.success'));
@@ -790,7 +974,7 @@ export default {
          */
         // 导出模板
         exportTemplate() {
-            exportTemplateSportCoach();
+            exportTemplateGoogleSheetConfig();
         },
         // 批量导出
         batchExport(key) {
@@ -808,42 +992,20 @@ export default {
                 case EXPORT_TYPE.CHOOSE: {
                     const hasSelected = this.selected.length > 0;
                     this.$message.success(EXPORT_SUCCESS_MSG);
-                    hasSelected ? exportChoseExcelSportCoach(this.selected) : this.$message.error(EXPORT_CHOOSE_NULL_ERROR_MSG);
+                    hasSelected ? exportChoseExcelGoogleSheetConfig(this.selected) : this.$message.error(EXPORT_CHOOSE_NULL_ERROR_MSG);
                     break;
                 }
                 case EXPORT_TYPE.QUERY:
                     this.$message.success(EXPORT_SUCCESS_MSG);
-                    exportParamExcelSportCoach({...this.filterData.listQuery});
+                    exportParamExcelGoogleSheetConfig({...this.filterData.listQuery});
                     break;
                 case EXPORT_TYPE.ALL:
                     this.$message.success(EXPORT_SUCCESS_MSG);
-                    exportExcelSportCoach();
+                    exportExcelGoogleSheetConfig();
                     break;
                 default:
                     this.$message.error(EXPORT_ERROR_MSG);
                     break;
-            }
-        },
-
-        /**
-         * 附件上传
-         */
-        // 添加上传成功回调
-        handleAddUploadSuccess(response, file, fileList) {
-            if (response.code === 20000) {
-                //响应式渲染深层对象vue2不会监听
-                this.$set(this.addDialogData.model, 'avatarUrl', response.data)
-            } else {
-                this.$message.error(response.data)
-            }
-        },
-        // 编辑上传成功回调
-        handleModifyUploadSuccess(response, file, fileList) {
-            if (response.code === 20000) {
-                //响应式渲染深层对象vue2不会监听
-                this.$set(this.modifyDialogData.model, 'avatarUrl', response.data)
-            } else {
-                this.$message.error(response.data)
             }
         },
     }

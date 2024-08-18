@@ -1,13 +1,13 @@
 import request from '@/common/utils/request'
 
-let BaseUrl = "/sportScoreInfo"
+let BaseUrl = "/googleSheetConfiguration"
 
 /**
  * 列表
  * @param data
  * @returns {*}
  */
-export function queryPageSportScoreInfo(data) {
+export function queryPageGoogleSheetConfig(data) {
     return request({
         url: BaseUrl + '/page',
         method: 'post',
@@ -20,7 +20,7 @@ export function queryPageSportScoreInfo(data) {
  * @returns {*}
  * @param data
  */
-export function saveSportScoreInfo(data) {
+export function saveGoogleSheetConfig(data) {
     return request({
         url: BaseUrl + '/save',
         method: 'post',
@@ -33,7 +33,7 @@ export function saveSportScoreInfo(data) {
  * @returns {*}
  * @param params
  */
-export function deleteSportScoreInfo(params) {
+export function deleteGoogleSheetConfig(params) {
     return request({
         url: BaseUrl + '/delete',
         method: 'delete',
@@ -46,7 +46,7 @@ export function deleteSportScoreInfo(params) {
  * @returns {*}
  * @param params
  */
-export function selectSportScoreInfo(params) {
+export function selectGoogleSheetConfig(params) {
     return request({
         url: BaseUrl + '/select',
         method: 'get',
@@ -58,9 +58,9 @@ export function selectSportScoreInfo(params) {
  * 查找
  * @returns {*}
  */
-export function selectAllSportScoreInfo() {
+export function selectAllGoogleSheetConfig() {
     return request({
-        url: BaseUrl + '/selectAllSportScoreInfo',
+        url: BaseUrl + '/selectAllGoogleSheetConfig',
         method: 'get',
     })
 }
@@ -70,7 +70,7 @@ export function selectAllSportScoreInfo() {
  * @returns {*}
  * @param params
  */
-export function exportTemplateSportScoreInfo(params) {
+export function exportTemplateGoogleSheetConfig(params) {
     return request({
         url: BaseUrl + '/exportTemplate',
         method: 'get',
@@ -83,7 +83,7 @@ export function exportTemplateSportScoreInfo(params) {
  * @returns {*}
  * @param data
  */
-export function exportChoseExcelSportScoreInfo(data) {
+export function exportChoseExcelGoogleSheetConfig(data) {
     return request({
         url: BaseUrl + '/exportChoseExcel',
         method: 'post',
@@ -97,7 +97,7 @@ export function exportChoseExcelSportScoreInfo(data) {
  * @returns {*}
  * @param data
  */
-export function exportParamExcelSportScoreInfo(data) {
+export function exportParamExcelGoogleSheetConfig(data) {
     return request({
         url: BaseUrl + '/exportParamExcel',
         method: 'post',
@@ -111,7 +111,7 @@ export function exportParamExcelSportScoreInfo(data) {
  * @returns {*}
  * @param params
  */
-export function exportExcelSportScoreInfo(params) {
+export function exportExcelGoogleSheetConfig(params) {
     return request({
         url: BaseUrl + '/exportExcel',
         method: 'get',
@@ -124,7 +124,7 @@ export function exportExcelSportScoreInfo(params) {
  * @returns {*}
  * @param file
  */
-export function saveBatchSportScoreInfo(file) {
+export function saveBatchGoogleSheetConfig(file) {
     const formData = new FormData();
     formData.append("file", file);
     return request({
@@ -140,7 +140,7 @@ export function saveBatchSportScoreInfo(file) {
  * @returns {Promise}
  * @param data
  */
-export function deleteBatchSportScoreInfo(data) {
+export function deleteBatchGoogleSheetConfig(data) {
     return request({
         url: BaseUrl + '/deleteBatch',
         method: 'post',
