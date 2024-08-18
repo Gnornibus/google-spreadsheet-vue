@@ -22,7 +22,7 @@
         <my-dialog
             :model="modifyDialogData.model"
             :modelItem="modifyDialogData.modelItem"
-            :title="$t('common.dialog.dialogModifyTitle')"
+            :title="modifyDialogData.title"
             :visible.sync="modifyDialogData.visible"
             :width="dialogWidth"
             :required="false"
@@ -401,7 +401,7 @@ export default {
                     data: [
                         {
                             name: "发起",
-                            type: 'primary',
+                            type: 'success',
                             permission: '040106',
                             handleRowClick: (index, row) => {
                                 this.$confirm("确认要发起运算嘛？" + row.spreadsheetId, i18n.t('common.messageBox.tips'), {
@@ -450,12 +450,26 @@ export default {
                             }
                         },
                         {
+                            name: "复制",
+                            type: 'primary',
+                            permission: '040102,040106',
+                            handleRowClick: (index, row) => {
+                                selectGoogleSheetConfig({id: row.id}).then((res) => {
+                                    this.modifyDialogData.title = "复制";
+                                    this.modifyDialogData.model = res.data
+                                    this.$set(this.modifyDialogData.model, 'id', "")
+                                    this.modifyDialogData.visible = true;
+                                })
+                            }
+                        },
+                        {
                             name: i18n.t('common.btn.modifyBtnName'),
                             type: 'primary',
                             permission: '040102,040106',
                             handleRowClick: (index, row) => {
                                 selectGoogleSheetConfig({id: row.id}).then((res) => {
-                                    this.modifyDialogData.model = res.data
+                                    this.modifyDialogData.title = i18n.t('common.dialog.dialogModifyTitle');
+                                    this.modifyDialogData.model = res.data;
                                     this.modifyDialogData.visible = true;
                                 })
                             }
@@ -664,6 +678,7 @@ export default {
             // 修改
             modifyDialogData: {
                 visible: false,
+                title: i18n.t('common.dialog.dialogModifyTitle'),
                 modelItem: [
                     {
                         type: 'input',
