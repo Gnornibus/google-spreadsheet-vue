@@ -465,6 +465,7 @@ export default {
                                     this.modifyDialogData.title = "复制";
                                     this.modifyDialogData.model = res.data
                                     this.$set(this.modifyDialogData.model, 'id', "")
+                                    this.$set(this.modifyDialogData.model, 'spreadsheetId', "")
                                     this.modifyDialogData.visible = true;
                                 })
                             }
