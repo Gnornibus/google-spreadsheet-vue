@@ -1,57 +1,105 @@
 <template>
     <div>
-        <el-button @click="showDialog">打开对话框</el-button>
-
-        <my-dialog
-            :visible.sync="grid.visible"
-            top="10%"
-            width="90%"
-            @submit="grid.visible = false">
-            <template v-slot:title-slot>
-                <a :href="grid.linkUrl" target="_blank" style="color: inherit; text-decoration: none;">
-                    {{ grid.title }}
-                </a>
-            </template>
-            <ag-grid-vue
-                class="ag-theme-alpine"
-                style="width: 100%; height: 400px;"
-                :columnDefs="grid.columnDefs"
-                :rowData="grid.rowData"
-                :gridOptions="grid.gridOptions">
-            </ag-grid-vue>
-        </my-dialog>
+        <el-input v-model="eventId" placeholder="Enter Event ID"></el-input>
+        <el-button @click="getEvent">获取事件信息</el-button>
+        <div v-if="data">
+            <h3>Event Data:</h3>
+            <pre>{{ data }}</pre>
+        </div>
+        <div v-else>
+            <p>No data fetched yet.</p>
+        </div>
     </div>
 </template>
+
 <script>
-import MyDialog from '@/components/Dialog';
-import { AgGridVue } from 'ag-grid-vue';
+import axios from 'axios';
 
 export default {
-    components: {
-        MyDialog,
-        AgGridVue
-    },
     data() {
         return {
-            grid: {
-                visible: false,
-                title: '点击查看更多信息',
-                linkUrl: 'https://example.com', // 初始超链接地址
-                columnDefs: [/* 列定义 */],
-                rowData: [/* 数据行 */],
-                gridOptions: {/* 表格选项 */}
-            }
+            apiKey: "phx_apIWBmYRALmdzndWYpV1lh1X5V6hitAFKqjLtq4799DgO81",
+            host: "https://us.posthog.com",
+            project: "85867",
+            eventId: '',
+            data: "",
         };
     },
     methods: {
-        showDialog() {
-            this.grid.visible = true;
-            this.updateLinkUrl(); // 更新超链接地址
+        async getEvent() {
+            const url = `${this.host}/api/projects/${this.project}/events/?event=${this.eventId}`;
+            const headers = {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json'
+            };
+
+            try {
+                const response = await axios.get(url, { headers });
+                this.data = response.data;
+            } catch (error) {
+                console.error('Failed to fetch event data:', error);
+                this.data = `Failed to fetch data: ${error.message}`;
+            }
         },
-        updateLinkUrl() {
-            // 根据具体的业务逻辑动态更新 URL
-            // 例如，可以根据 rowData 的内容或其他条件来设置
-            this.grid.linkUrl = 'https://new-url.com'; // 新的 URL 地址
+        async getPerson() {
+            const url = `${this.host}/api/projects/${this.project}/persons/?distinct_id=${this.eventId}`;
+            const headers = {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json'
+            };
+
+            try {
+                const response = await axios.get(url, {headers});
+                this.data = response.data;
+            } catch (error) {
+                console.error('Failed to fetch person data:', error);
+                this.data = `Failed to fetch data: ${error.message}`;
+            }
+        },
+        async getDashboard() {
+            const url = `${this.host}/api/projects/${this.project}/dashboards/`;
+            const headers = {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json'
+            };
+
+            try {
+                const response = await axios.get(url, {headers});
+                this.data = response.data;
+            } catch (error) {
+                console.error('Failed to fetch dashboard data:', error);
+                this.data = `Failed to fetch data: ${error.message}`;
+            }
+        },
+        async getInsight() {
+            const url = `${this.host}/api/projects/${this.project}/insights/?short_id=${this.eventId}`;
+            const headers = {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json'
+            };
+
+            try {
+                const response = await axios.get(url, {headers});
+                this.data = response.data;
+            } catch (error) {
+                console.error('Failed to fetch insight data:', error);
+                this.data = `Failed to fetch data: ${error.message}`;
+            }
+        },
+        async getCohort() {
+            const url = `${this.host}/api/projects/${this.project}/cohorts/?id=${this.eventId}`;
+            const headers = {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json'
+            };
+
+            try {
+                const response = await axios.get(url, { headers });
+                this.data = response.data;
+            } catch (error) {
+                console.error('Failed to fetch cohort data:', error);
+                this.data = `Failed to fetch data: ${error.message}`;
+            }
         }
     }
 };
