@@ -319,13 +319,13 @@ export default {
                     //     sortable: true,
                     // },
                     {
-                        key: 'outputHeader',
+                        key: 'outputHeaderName',
                         label: i18n.t('view.googleSheetConfig.outputHeader'),
                         sortable: true,
                     },
                     {
                         width: 150,
-                        key: 'ignoreDrive',
+                        key: 'ignoreDriveName',
                         label: i18n.t('view.googleSheetConfig.ignoreDrive'),
                         sortable: true,
                     },
