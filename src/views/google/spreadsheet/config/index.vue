@@ -25,7 +25,6 @@
             :title="modifyDialogData.title"
             :visible.sync="modifyDialogData.visible"
             :width="dialogWidth"
-            :required="false"
             @close="queryPage()"
             @submit="modify">
         </my-dialog>
@@ -159,16 +158,6 @@ export default {
                         name: i18n.t('view.googleSheetConfig.remark'),
                     },
                     {
-                        key: 'outputHeader',
-                        length: 8,
-                        name: i18n.t('view.googleSheetConfig.outputHeader'),
-                    },
-                    {
-                        key: 'ignoreDrive',
-                        length: 8,
-                        name: i18n.t('view.googleSheetConfig.ignoreDrive'),
-                    },
-                    {
                         key: 'sourceUrl',
                         length: 255,
                         name: i18n.t('view.googleSheetConfig.sourceUrl'),
@@ -232,6 +221,22 @@ export default {
                         name: i18n.t('view.googleSheetConfig.status'),
                         dictSelect: {
                             dictCode: 'google.sheet.configuration.status'
+                        }
+                    },
+                    {
+                        key: 'outputHeader',
+                        length: 8,
+                        name: i18n.t('view.googleSheetConfig.outputHeader'),
+                        dictSelect: {
+                            dictCode: 'sys.yes.no'
+                        }
+                    },
+                    {
+                        key: 'ignoreDrive',
+                        length: 8,
+                        name: i18n.t('view.googleSheetConfig.ignoreDrive'),
+                        dictSelect: {
+                            dictCode: 'sys.yes.no'
                         }
                     },
                     // {
@@ -585,34 +590,47 @@ export default {
                 visible: false,
                 modelItem: [
                     {
+                        disabled: true,
+                        required: false,
                         type: 'input',
                         length: 128,
                         key: 'spreadsheetId',
                         name: i18n.t('view.googleSheetConfig.spreadsheetId'),
                     },
                     {
-                        type: 'select',
+                        required: false,
+                        type: 'dictSelect',
                         length: 32,
                         key: 'status',
                         name: i18n.t('view.googleSheetConfig.status'),
+                        dictSelect: {
+                            dictCode: 'google.sheet.configuration.status'
+                        }
                     },
                     {
+                        required: false,
                         type: 'input',
                         length: 255,
                         key: 'remark',
                         name: i18n.t('view.googleSheetConfig.remark'),
                     },
                     {
-                        type: 'input',
+                        type: 'dictSelect',
                         length: 8,
                         key: 'outputHeader',
                         name: i18n.t('view.googleSheetConfig.outputHeader'),
+                        dictSelect: {
+                            dictCode: 'sys.yes.no'
+                        }
                     },
                     {
-                        type: 'input',
+                        type: 'dictSelect',
                         length: 8,
                         key: 'ignoreDrive',
                         name: i18n.t('view.googleSheetConfig.ignoreDrive'),
+                        dictSelect: {
+                            dictCode: 'sys.yes.no'
+                        }
                     },
                     {
                         type: 'input',
@@ -639,12 +657,14 @@ export default {
                         name: i18n.t('view.googleSheetConfig.judgeCondition'),
                     },
                     {
+                        required: false,
                         type: 'input',
                         length: 255,
                         key: 'compareField',
                         name: i18n.t('view.googleSheetConfig.compareField'),
                     },
                     {
+                        required: false,
                         type: 'input',
                         length: 255,
                         key: 'outputField',
@@ -657,6 +677,7 @@ export default {
                         name: i18n.t('view.googleSheetConfig.outputMode'),
                     },
                     {
+                        required: false,
                         type: 'input',
                         length: 255,
                         key: 'cron',
@@ -675,6 +696,7 @@ export default {
                         name: i18n.t('view.googleSheetConfig.targetSheet'),
                     },
                     {
+                        required: false,
                         type: 'input',
                         length: 255,
                         key: 'targetStart',
@@ -689,34 +711,47 @@ export default {
                 title: i18n.t('common.dialog.dialogModifyTitle'),
                 modelItem: [
                     {
+                        disabled: true,
+                        required: false,
                         type: 'input',
                         length: 128,
                         key: 'spreadsheetId',
                         name: i18n.t('view.googleSheetConfig.spreadsheetId'),
                     },
                     {
-                        type: 'input',
+                        required: false,
+                        type: 'dictSelect',
                         length: 32,
                         key: 'status',
                         name: i18n.t('view.googleSheetConfig.status'),
+                        dictSelect: {
+                            dictCode: 'google.sheet.configuration.status'
+                        }
                     },
                     {
+                        required: false,
                         type: 'input',
                         length: 255,
                         key: 'remark',
                         name: i18n.t('view.googleSheetConfig.remark'),
                     },
                     {
-                        type: 'input',
+                        type: 'dictSelect',
                         length: 8,
                         key: 'outputHeader',
                         name: i18n.t('view.googleSheetConfig.outputHeader'),
+                        dictSelect: {
+                            dictCode: 'sys.yes.no'
+                        }
                     },
                     {
-                        type: 'input',
+                        type: 'dictSelect',
                         length: 8,
                         key: 'ignoreDrive',
                         name: i18n.t('view.googleSheetConfig.ignoreDrive'),
+                        dictSelect: {
+                            dictCode: 'sys.yes.no'
+                        }
                     },
                     {
                         type: 'input',
@@ -743,12 +778,14 @@ export default {
                         name: i18n.t('view.googleSheetConfig.judgeCondition'),
                     },
                     {
+                        required: false,
                         type: 'input',
                         length: 255,
                         key: 'compareField',
                         name: i18n.t('view.googleSheetConfig.compareField'),
                     },
                     {
+                        required: false,
                         type: 'input',
                         length: 255,
                         key: 'outputField',
@@ -761,6 +798,7 @@ export default {
                         name: i18n.t('view.googleSheetConfig.outputMode'),
                     },
                     {
+                        required: false,
                         type: 'input',
                         length: 255,
                         key: 'cron',
@@ -779,6 +817,7 @@ export default {
                         name: i18n.t('view.googleSheetConfig.targetSheet'),
                     },
                     {
+                        required: false,
                         type: 'input',
                         length: 255,
                         key: 'targetStart',
@@ -804,10 +843,13 @@ export default {
                         name: i18n.t('view.googleSheetConfig.spreadsheetId'),
                     },
                     {
-                        type: 'input',
+                        type: 'dictSelect',
                         length: 32,
                         key: 'status',
                         name: i18n.t('view.googleSheetConfig.status'),
+                        dictSelect: {
+                            dictCode: 'google.sheet.configuration.status'
+                        }
                     },
                     {
                         type: 'input',
@@ -838,16 +880,22 @@ export default {
                         name: i18n.t('view.googleSheetConfig.updTime'),
                     },
                     {
-                        type: 'input',
+                        type: 'dictSelect',
                         length: 8,
                         key: 'outputHeader',
                         name: i18n.t('view.googleSheetConfig.outputHeader'),
+                        dictSelect: {
+                            dictCode: 'sys.yes.no'
+                        }
                     },
                     {
-                        type: 'input',
+                        type: 'dictSelect',
                         length: 8,
                         key: 'ignoreDrive',
                         name: i18n.t('view.googleSheetConfig.ignoreDrive'),
+                        dictSelect: {
+                            dictCode: 'sys.yes.no'
+                        }
                     },
                     {
                         type: 'input',
