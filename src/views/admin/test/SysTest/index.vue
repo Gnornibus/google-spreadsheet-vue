@@ -1,7 +1,8 @@
 <template>
     <div>
         <el-input v-model="eventId" placeholder="Enter Event ID"></el-input>
-        <el-button @click="getEvent">获取事件信息</el-button>
+        <el-input v-model="properties" placeholder="Enter properties"></el-input>
+        <el-button @click="getEventBySpreadsheetId">获取事件信息</el-button>
         <div v-if="data">
             <h3>Event Data:</h3>
             <pre>{{ data }}</pre>
@@ -22,10 +23,35 @@ export default {
             host: "https://us.posthog.com",
             project: "85867",
             eventId: '',
+            properties: '',
             data: "",
         };
     },
     methods: {
+        async getEventBySpreadsheetId() {
+            const url = `${this.host}/api/projects/${this.project}/query/`;
+            const body = {
+                query: {
+                    kind: "HogQLQuery",
+                    query: "select properties.sourceUrl AS '来源路径' from persons where properties.sourceUrl is not null",
+                }
+            };
+            const config = {
+                headers: {
+                    'content-type': "application/json",
+                    'Authorization': `Bearer ${this.apiKey}`,
+                },
+                data: JSON.stringify(body)
+            };
+
+            try {
+                const response = await axios.post(url, body, config);
+                this.data = response.data;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                this.data = `Failed to fetch data: ${error.message}`;
+            }
+        },
         async getEvent() {
             const url = `${this.host}/api/projects/${this.project}/events/?event=${this.eventId}`;
             const headers = {
@@ -94,13 +120,13 @@ export default {
             };
 
             try {
-                const response = await axios.get(url, { headers });
+                const response = await axios.get(url, {headers});
                 this.data = response.data;
             } catch (error) {
                 console.error('Failed to fetch cohort data:', error);
                 this.data = `Failed to fetch data: ${error.message}`;
             }
-        }
+        },
     }
 };
 </script>
