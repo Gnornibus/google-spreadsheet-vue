@@ -24,6 +24,7 @@
                 class="ag-theme-alpine"
                 style="width: 100%; height: 400px;"
                 :columnDefs="grid.columnDefs"
+                :children="true"
                 :rowData="grid.rowData"
                 :gridOptions="grid.gridOptions">
             </ag-grid-vue>
@@ -40,33 +41,8 @@ export default {
     data() {
         return {
             configData: {
-                id: "1819002266717372442",
-                creUserId: "0",
-                creTime: "2024-08-22 00:12:09",
-                updUserId: "-1",
-                updTime: "2024-08-22 00:15:18",
-                version: 2,
-                deleted: 0,
-                tenantId: null,
-                spreadsheetId: "15nnoeazZ52Q5HKZBP6c9sOgoVZD24p8Qa-HMLLQrNE4",
-                status: "complete_config",
-                statusName: "完成配置执行",
-                remark: null,
-                outputHeader: "TRUE",
-                outputHeaderName: "是",
-                ignoreDrive: "FALSE",
-                ignoreDriveName: "否",
                 sourceUrl: "15nnoeazZ52Q5HKZBP6c9sOgoVZD24p8Qa-HMLLQrNE4",
                 sourceSheet: "PA_ALL",
-                dataRange: "A4:G",
-                judgeCondition: "email!=''",
-                compareField: "email;submitted",
-                outputField: "",
-                outputMode: "first",
-                cron: "5mins",
-                targetUrl: "15nnoeazZ52Q5HKZBP6c9sOgoVZD24p8Qa-HMLLQrNE4",
-                targetSheet: "PA_ALL_TEST",
-                targetStart: ""
             },
             apiKey: "phx_apIWBmYRALmdzndWYpV1lh1X5V6hitAFKqjLtq4799DgO81",
             host: "https://us.posthog.com",
@@ -133,18 +109,18 @@ export default {
 
             try {
                 const response = await axios.post(url, body, config);
-                this.processData(response.data.types, response.data.results);
+                this.processData(response.data);
                 this.grid.visible = true;
             } catch (error) {
                 console.error('Error fetching data:', error);
                 this.data = `Failed to fetch data: ${error.message}`;
             }
         },
-        processData(columnDefsList, data) {
+        processData(data) {
             if (!data.length) return;
 
             // 构建列定义
-            this.grid.columnDefs = columnDefsList.map(([field, type]) => ({
+            this.grid.columnDefs = data.types.map(([field, type]) => ({
                 headerName: field.replace(/_/g, ' ').replace(/\$+/g, '').replace(/([a-z])([A-Z])/g, '$1 $2'), // 使列名更易读
                 field: field.toLowerCase(),  // 确保 field 名称为小写
                 sortable: true,
@@ -157,7 +133,7 @@ export default {
                 let rowData = {};
                 row.forEach((cell, index) => {
                     // 使用小写的 field 名称来匹配列定义
-                    let fieldName = columnDefsList[index][0].toLowerCase();
+                    let fieldName = data.types[index][0].toLowerCase();
                     // 特殊处理 JSON 字符串，确保 properties 能被正确解析
                     if (fieldName === 'properties' && typeof cell === 'string') {
                         try {
