@@ -427,3 +427,9 @@ export function uploadVideoFile(file) {
 export function setObjValueNull(obj) {
     return Object.keys(obj).forEach(key => obj[key] = '');
 }
+
+// 格式化时间
+export function formatDate(date) {
+    const pad = (num) => (num < 10 ? '0' + num : num);
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
