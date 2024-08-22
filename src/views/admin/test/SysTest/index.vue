@@ -1,7 +1,6 @@
 <template>
     <div>
         <el-button @click="getEventByProperties">获取事件信息</el-button>
-        {{ datetimeScope }}
         <br>
         <el-date-picker
             v-model="datetimeScope"
@@ -18,15 +17,12 @@
                 style="width: 100%; height: 400px;"
                 :columnDefs="grid.columnDefs"
                 :rowData="grid.rowData"
-                :gridOptions="grid.gridOptions"
-                :masterDetail="true"
-                :detailCellRendererParams="grid.gridOptions.detailCellRendererParams">
+                :gridOptions="grid.gridOptions">
             </ag-grid-vue>
         </div>
         <div v-else>
             <p>No data fetched yet.</p>
         </div>
-        {{ grid.rowData }}
     </div>
 </template>
 
@@ -49,9 +45,20 @@ export default {
             apiKey: "phx_apIWBmYRALmdzndWYpV1lh1X5V6hitAFKqjLtq4799DgO81",
             host: "https://us.posthog.com",
             project: "85867",
-            data: "",
             datetimeScope: this.getDefaultDateRange(),
-            // AgGridVue
+            pickerOptions: {
+                shortcuts: [
+                    {
+                        text: '最近一周',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date(end.getTime() - 3600 * 1000 * 24 * 7);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    },
+                    // Other shortcuts...
+                ]
+            },
             grid: {
                 visible: false,
                 linkUrl: "https://docs.google.com/spreadsheets/u/0/",
@@ -62,72 +69,21 @@ export default {
                     masterDetail: true,
                     detailCellRendererParams: {
                         detailGridOptions: {
-                            columnDefs: [
-                                {field: 'detailField1'},
-                                {field: 'detailField2'}
-                            ],
+                            columnDefs: [],
                             domLayout: 'autoHeight'
                         },
                         getDetailRowData: function (params) {
-                            params.successCallback(params.data.details);
-                        }
-                    },
-                    sideBar: {
-                        toolPanels: [
-                            {
-                                id: 'columns',
-                                labelDefault: 'Columns',
-                                labelKey: 'columns',
-                                iconKey: 'columns',
-                                toolPanel: 'agColumnsToolPanel',
-                                toolPanelParams: {
-                                    suppressRowGroups: true,
-                                    suppressValues: true,
-                                    suppressPivots: true,
-                                    suppressPivotMode: true
-                                }
-                            },
-                            {
-                                id: 'filters',
-                                labelDefault: 'Filters',
-                                labelKey: 'filters',
-                                iconKey: 'filter',
-                                toolPanel: 'agFiltersToolPanel',
+                            if (params.data && params.data.details) {
+                                params.successCallback(params.data.details);
+                            } else {
+                                params.successCallback([]);
                             }
-                        ],
-                        defaultToolPanel: ''
+                        }
                     }
                 },
                 columnDefs: [],
                 rowData: []
-            },
-            pickerOptions: {
-                shortcuts: [{
-                    text: '最近一周',
-                    onClick(picker) {
-                        const end = new Date();
-                        const start = new Date();
-                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
-                        picker.$emit('pick', [start, end]);
-                    }
-                }, {
-                    text: '最近一个月',
-                    onClick(picker) {
-                        const end = new Date();
-                        const start = new Date();
-                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
-                        picker.$emit('pick', [start, end]);
-                    }
-                }, {
-                    text: '最近三个月',
-                    onClick(picker) {
-                        const end = new Date();
-                        const start = new Date();
-                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
-                        picker.$emit('pick', [start, end]);
-                    }
-                }]
-            },
+            }
         };
     },
     methods: {
@@ -139,28 +95,25 @@ export default {
                     query: `select *
                             from events
                             where event = '${this.configData.status}'
-                              AND properties.sourceUrl = '${this.configData.sourceUrl}'
-                              AND properties.sourceSheet = '${this.configData.sourceSheet}'
-                              AND timestamp
+                              and properties.sourceUrl = '${this.configData.sourceUrl}'
+                              and properties.sourceSheet = '${this.configData.sourceSheet}'
+                              and timestamp
                                 > '${this.datetimeScope[0]}'
-                              AND timestamp
+                              and timestamp
                                 < '${this.datetimeScope[1]}'
-                            order by timestamp asc
-                    `,
+                            order by timestamp asc`
                 }
             };
             const config = {
                 headers: {
-                    'content-type': "application/json",
+                    'Content-Type': "application/json",
                     'Authorization': `Bearer ${this.apiKey}`,
-                },
-                data: JSON.stringify(body)
+                }
             };
 
             try {
                 const response = await axios.post(url, body, config);
                 this.processData(response.data.types, response.data.results);
-                this.grid.visible = true;
             } catch (error) {
                 console.error('Error fetching data:', error);
                 this.data = `Failed to fetch data: ${error.message}`;
@@ -169,46 +122,44 @@ export default {
         processData(columnDefsList, data) {
             if (!data.length) return;
 
-            // 构建列定义
             this.grid.columnDefs = columnDefsList.map(([field, type]) => ({
-                headerName: field.replace(/_/g, ' ').replace(/\$+/g, '').replace(/([a-z])([A-Z])/g, '$1 $2'), // 使列名更易读
-                field: field.toLowerCase(),  // 确保 field 名称为小写
+                headerName: field.replace(/_/g, ' ').replace(/\$+/g, '').replace(/([a-z])([A-Z])/g, '$1 $2'),
+                field: field.toLowerCase(),
                 sortable: true,
                 filter: true,
-                resizable: true
+                resizable: true,
+                cellRenderer: field.toLowerCase() === 'properties' ? 'agGroupCellRenderer' : null
             }));
 
-            let flag = true;
-            // 构建行数据
+            let flag = true; // 控制只执行一次
             this.grid.rowData = data.map(row => {
                 let rowData = {};
-                row.forEach((cell, index) => {
-                    // 使用小写的 field 名称来匹配列定义
-                    let fieldName = columnDefsList[index][0].toLowerCase();
-                    // 特殊处理 JSON 字符串，确保 properties 能被正确解析
-                    if (fieldName === 'properties' && typeof cell === 'string') {
+                columnDefsList.forEach(([field], index) => {
+                    if (field.toLowerCase() === "properties") {
                         try {
-                            rowData[fieldName] = JSON.parse(JSON.stringify(cell));
+                            let details = JSON.parse(row[index]);
                             if (flag) {
-                                this.processChildrenColDefs(rowData[fieldName]);
+                                this.processChildrenColDefs(details);
                                 flag = false;
                             }
-                            rowData["details"] = JSON.parse(rowData[fieldName]);
+                            rowData[field.toLowerCase()] = row[index];
+                            rowData["details"] = [details];
                         } catch (e) {
-                            rowData[fieldName] = cell; // 如果解析失败，保留原始字符串
+                            console.error('Error parsing properties:', e);
+                            rowData[field.toLowerCase()] = {};
+                            rowData["details"] = [];
                         }
                     } else {
-                        rowData[fieldName] = cell;
+                        rowData[field.toLowerCase()] = row[index];
                     }
                 });
                 return rowData;
             });
         },
         processChildrenColDefs(data) {
-            const obj = JSON.parse(data);
-            this.grid.gridOptions.detailCellRendererParams.detailGridOptions.columnDefs = Object.keys(obj).map(key => ({
+            this.grid.gridOptions.detailCellRendererParams.detailGridOptions.columnDefs = Object.keys(data).map(key => ({
                 headerName: key.replace(/_/g, ' ').replace(/\$+/g, '').replace(/([a-z])([A-Z])/g, '$1 $2'), // 使列名更易读
-                field: key.toLowerCase(),  // 确保 field 名称为小写
+                field: key,  // 确保 field 名称为小写
                 sortable: true,
                 filter: true,
                 resizable: true
@@ -220,81 +171,12 @@ export default {
             start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
             return [formatDate(start), formatDate(end)];
         },
-        async getEvent() {
-            const url = `${this.host}/api/projects/${this.project}/events/?event=${this.eventId}`;
-            const headers = {
-                'Authorization': `Bearer ${this.apiKey}`,
-                'Content-Type': 'application/json'
-            };
-
-            try {
-                const response = await axios.get(url, {headers});
-                this.data = response.data;
-            } catch (error) {
-                console.error('Failed to fetch event data:', error);
-                this.data = `Failed to fetch data: ${error.message}`;
-            }
-        },
-        async getPerson() {
-            const url = `${this.host}/api/projects/${this.project}/persons/?distinct_id=${this.eventId}`;
-            const headers = {
-                'Authorization': `Bearer ${this.apiKey}`,
-                'Content-Type': 'application/json'
-            };
-
-            try {
-                const response = await axios.get(url, {headers});
-                this.data = response.data;
-            } catch (error) {
-                console.error('Failed to fetch person data:', error);
-                this.data = `Failed to fetch data: ${error.message}`;
-            }
-        },
-        async getDashboard() {
-            const url = `${this.host}/api/projects/${this.project}/dashboards/`;
-            const headers = {
-                'Authorization': `Bearer ${this.apiKey}`,
-                'Content-Type': 'application/json'
-            };
-
-            try {
-                const response = await axios.get(url, {headers});
-                this.data = response.data;
-            } catch (error) {
-                console.error('Failed to fetch dashboard data:', error);
-                this.data = `Failed to fetch data: ${error.message}`;
-            }
-        },
-        async getInsight() {
-            const url = `${this.host}/api/projects/${this.project}/insights/?short_id=${this.eventId}`;
-            const headers = {
-                'Authorization': `Bearer ${this.apiKey}`,
-                'Content-Type': 'application/json'
-            };
-
-            try {
-                const response = await axios.get(url, {headers});
-                this.data = response.data;
-            } catch (error) {
-                console.error('Failed to fetch insight data:', error);
-                this.data = `Failed to fetch data: ${error.message}`;
-            }
-        },
-        async getCohort() {
-            const url = `${this.host}/api/projects/${this.project}/cohorts/?id=${this.eventId}`;
-            const headers = {
-                'Authorization': `Bearer ${this.apiKey}`,
-                'Content-Type': 'application/json'
-            };
-
-            try {
-                const response = await axios.get(url, {headers});
-                this.data = response.data;
-            } catch (error) {
-                console.error('Failed to fetch cohort data:', error);
-                this.data = `Failed to fetch data: ${error.message}`;
-            }
-        },
     }
 };
 </script>
+
+<style scoped>
+::v-deep .ag-details-row {
+    padding: 0px 0px 0px 20px;
+}
+</style>
