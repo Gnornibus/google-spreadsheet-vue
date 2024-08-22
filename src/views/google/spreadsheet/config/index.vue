@@ -1012,7 +1012,8 @@ export default {
                         defaultToolPanel: 'columns'
                     }
                 },
-                columnDefs: ""
+                columnDefs: "",
+                rowData: [],
             }
         }
     },
