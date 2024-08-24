@@ -47,23 +47,86 @@
             <upload-excel-component :excelData="batchDialogData.excelData"/>
         </my-dialog>
         <my-dialog
-            :title="grid.title"
-            :visible.sync="grid.visible"
+            :title="cacheGrid.title"
+            :visible.sync="cacheGrid.visible"
             top="10%"
             width="90%"
-            @submit="grid.visible=false">
+            @submit="cacheGrid.visible=false">
             <template v-slot:title-slot>
-                <a type="primary" :href="grid.linkUrl" target="_blank"
-                         style="color: inherit; text-decoration: none;">
-                    <span style="color: deepskyblue">{{ grid.title }}</span>
+                <a type="primary" :href="cacheGrid.linkUrl" target="_blank"
+                   style="color: inherit; text-decoration: none;">
+                    <span style="color: deepskyblue">{{ cacheGrid.title }}</span>
                 </a>
             </template>
             <ag-grid-vue
                 class="ag-theme-alpine"
                 style="width: 100%; height: 400px;"
-                :columnDefs="grid.columnDefs"
-                :rowData="grid.rowData"
-                :gridOptions="grid.gridOptions">
+                :columnDefs="cacheGrid.columnDefs"
+                :rowData="cacheGrid.rowData"
+                :gridOptions="cacheGrid.gridOptions">
+            </ag-grid-vue>
+        </my-dialog>
+        <!--缓存数据查询弹框-->
+        <my-dialog
+            :title="cacheGrid.title"
+            :visible.sync="cacheGrid.visible"
+            top="10%"
+            width="90%"
+            @submit="cacheGrid.visible=false">
+            <template v-slot:title-slot>
+                <a type="primary" :href="cacheGrid.linkUrl" target="_blank"
+                   style="color: inherit; text-decoration: none;">
+                    <span style="color: deepskyblue">{{ cacheGrid.title }}</span>
+                </a>
+            </template>
+            <ag-grid-vue
+                class="ag-theme-alpine"
+                style="width: 100%; height: 400px;"
+                :columnDefs="cacheGrid.columnDefs"
+                :rowData="cacheGrid.rowData"
+                :gridOptions="cacheGrid.gridOptions">
+            </ag-grid-vue>
+        </my-dialog>
+        <!--事件查询弹框-->
+        <my-dialog
+            :title="eventGrid.title"
+            :visible.sync="eventGrid.visible"
+            top="10%"
+            width="90%"
+            @submit="eventGrid.visible=false">
+            <template v-slot:title-slot>
+                <a type="primary" :href="eventGrid.linkUrl" target="_blank"
+                   style="color: inherit; text-decoration: none;">
+                    <span style="color: deepskyblue">{{ eventGrid.title }}</span>
+                </a>
+            </template>
+            <el-row>
+                <el-col :span="7">
+                    <el-date-picker
+                        v-model="eventGrid.datetimeScope"
+                        type="datetimerange"
+                        :picker-options="pickerOptions"
+                        range-separator="至"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期"
+                        value-format="yyyy-MM-dd HH:mm:ss">
+                    </el-date-picker>
+                </el-col>
+                <el-col :span="7">
+                    <dict-select :field="'status'" :name="'事件状态'"
+                                 :model="eventGrid.currenObj"
+                                 :dict-select="{dictCode:'google.sheet.configuration.status'}"/>
+                </el-col>
+                <el-col :span="7">
+                    <el-button type="primary" @click="getEventByProperties(eventGrid.currenObj)">查询</el-button>
+                </el-col>
+            </el-row>
+            <ag-grid-vue
+                class="ag-theme-alpine"
+                style="width: 100%; height: 400px;"
+                :columnDefs="eventGrid.columnDefs"
+                :rowData="eventGrid.rowData"
+                :gridOptions="eventGrid.gridOptions">
             </ag-grid-vue>
         </my-dialog>
     </div>
@@ -93,10 +156,13 @@ import ImageUpload from "@/components/Upload/ImageUpload.vue";
 import {AgGridVue} from "ag-grid-vue";
 import {deleteSheetOperation} from "../../../../api/google-sheet-remove-api";
 import {launchOperation} from "../../../../api/google-sheet-config-api";
+import DictSelect from "@/components/Select/DictSelect.vue";
+import axios from "axios";
+import {formatDate} from "@/common/utils/validate";
 
 export default {
     name: 'GoogleConfig',
-    components: {AgGridVue, ImageUpload, searchPane, tablePane, MyDialog, UploadExcelComponent, BackToTop},
+    components: {DictSelect, AgGridVue, ImageUpload, searchPane, tablePane, MyDialog, UploadExcelComponent, BackToTop},
     // 生命周期-页面创建
     created() {
         // 初始化方法
@@ -408,7 +474,7 @@ export default {
                 // 操作按钮项
                 operation: {
                     label: i18n.t('table.operation'),
-                    width: 80 * 6,
+                    width: 80 * 7,
                     data: [
                         {
                             name: "发起",
@@ -435,6 +501,15 @@ export default {
                             }
                         },
                         {
+                            name: "事件",
+                            type: 'primary',
+                            permission: '040106',
+                            handleRowClick: (index, row) => {
+                                this.eventGrid.currenObj = row;
+                                this.getEventByProperties(row)
+                            }
+                        },
+                        {
                             name: "配置",
                             type: 'primary',
                             permission: '040106',
@@ -443,10 +518,10 @@ export default {
                                     "sourceUrl": row.sourceUrl,
                                     "sourceSheet": row.sourceSheet
                                 }).then((res) => {
-                                    this.grid.title = "【来源】：" + row.sourceUrl + "   【页签】：" + row.sourceSheet
-                                    this.grid.linkUrl = "https://docs.google.com/spreadsheets/d/" + row.sourceUrl
-                                    this.processData(res.data)
-                                    this.grid.visible = true;
+                                    this.cacheGrid.title = "【来源】：" + row.sourceUrl + "   【页签】：" + row.sourceSheet
+                                    this.cacheGrid.linkUrl = "https://docs.google.com/spreadsheets/d/" + row.sourceUrl
+                                    this.processCacheAgGridData(res.data)
+                                    this.cacheGrid.visible = true;
                                 })
                             }
                         },
@@ -978,8 +1053,8 @@ export default {
                 },
             },
 
-            // AgGridVue
-            grid: {
+            // 缓存弹框配置
+            cacheGrid: {
                 visible: false,
                 linkUrl: "https://docs.google.com/spreadsheets/u/0/",
                 title: "测试",
@@ -1014,7 +1089,66 @@ export default {
                 },
                 columnDefs: "",
                 rowData: [],
-            }
+            },
+            // 事件弹框配置
+            eventGrid: {
+                host: "https://us.posthog.com",
+                project: "85867",
+                apiKey: "phx_apIWBmYRALmdzndWYpV1lh1X5V6hitAFKqjLtq4799DgO81",
+                visible: false,
+                linkUrl: "https://docs.google.com/spreadsheets/u/0/",
+                title: "测试",
+                currenObj: {},
+                datetimeScope: this.getDefaultDateRange(),
+                gridOptions: {
+                    enableRangeSelection: true,
+                    enableClipboard: true,
+                    masterDetail: true,
+                    detailCellRendererParams: {
+                        detailGridOptions: {
+                            columnDefs: [],
+                            domLayout: 'autoHeight'
+                        },
+                        getDetailRowData: function (params) {
+                            if (params.data && params.data.details) {
+                                params.successCallback(params.data.details);
+                            } else {
+                                params.successCallback([]);
+                            }
+                        }
+                    }
+                },
+                columnDefs: [],
+                rowData: []
+            },
+            pickerOptions: {
+                shortcuts: [{
+                    text: '最近一周',
+                    onClick(picker) {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+                        picker.$emit('pick', [start, end]);
+                    }
+                }, {
+                    text: '最近一个月',
+                    onClick(picker) {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                        picker.$emit('pick', [start, end]);
+                    }
+                }, {
+                    text: '最近三个月',
+                    onClick(picker) {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+                        picker.$emit('pick', [start, end]);
+                    }
+                }]
+            },
+
         }
     },
     methods: {
@@ -1196,11 +1330,11 @@ export default {
             }
         },
 
-        processData(data) {
+        processCacheAgGridData(data) {
             if (!data.length) return;
 
             // 第一行为列定义
-            this.grid.columnDefs = data[0].map(header => ({
+            this.cacheGrid.columnDefs = data[0].map(header => ({
                 headerName: header,
                 field: header.toLowerCase(),
                 sortable: true,
@@ -1209,7 +1343,7 @@ export default {
             }));
 
             // 剩余行为行数据
-            this.grid.rowData = data.slice(1).map(row => {
+            this.cacheGrid.rowData = data.slice(1).map(row => {
                 let rowData = {};
                 row.forEach((cell, index) => {
                     let fieldName = data[0][index].toLowerCase();
@@ -1217,7 +1351,105 @@ export default {
                 });
                 return rowData;
             });
-        }
+        },
+
+        async getEventByProperties() {
+            const url = `${this.eventGrid.host}/api/projects/${this.eventGrid.project}/query/`;
+            const body = {
+                query: {
+                    kind: "HogQLQuery",
+                    query: `select *
+                            from events
+                            where event = '${this.eventGrid.currenObj.status}'
+                              and properties.sourceUrl = '${this.eventGrid.currenObj.sourceUrl}'
+                              and properties.sourceSheet = '${this.eventGrid.currenObj.sourceSheet}'
+                              and timestamp
+                                > '${this.eventGrid.datetimeScope[0]}'
+                              and timestamp
+                                < '${this.eventGrid.datetimeScope[1]}'
+                            order by timestamp asc`
+                }
+            };
+            const config = {
+                headers: {
+                    'Content-Type': "application/json",
+                    'Authorization': `Bearer ${this.eventGrid.apiKey}`,
+                }
+            };
+
+            try {
+                const response = await axios.post(url, body, config);
+                this.processData(response.data.types, response.data.results);
+                this.eventGrid.title = "【来源】：" + this.eventGrid.currenObj.sourceUrl + "   【页签】：" + this.eventGrid.currenObj.sourceSheet
+                this.eventGrid.linkUrl = "https://docs.google.com/spreadsheets/d/" + this.eventGrid.currenObj.sourceUrl
+                this.eventGrid.visible = true;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                this.data = `Failed to fetch data: ${error.message}`;
+            }
+        },
+        processData(columnDefsList, data) {
+            if (!data.length) return;
+
+            this.eventGrid.columnDefs = columnDefsList.map(([field, type]) => ({
+                headerName: field.replace(/_/g, ' ').replace(/\$+/g, '').replace(/([a-z])([A-Z])/g, '$1 $2'),
+                field: field.toLowerCase(),
+                sortable: true,
+                filter: true,
+                resizable: true,
+                cellRenderer: field.toLowerCase() === 'properties' ? 'agGroupCellRenderer' : null
+            }));
+
+            let flag = true; // 控制只执行一次
+            this.eventGrid.rowData = data.map(row => {
+                let rowData = {};
+                columnDefsList.forEach(([field], index) => {
+                    if (field.toLowerCase() === "properties") {
+                        try {
+                            let details = JSON.parse(row[index]);
+                            if (flag) {
+                                this.processChildrenColDefs(details);
+                                flag = false;
+                            }
+                            rowData[field.toLowerCase()] = row[index];
+                            rowData["details"] = [details];
+                        } catch (e) {
+                            console.error('Error parsing properties:', e);
+                            rowData[field.toLowerCase()] = {};
+                            rowData["details"] = [];
+                        }
+                    } else {
+                        rowData[field.toLowerCase()] = row[index];
+                    }
+                });
+                return rowData;
+            });
+        },
+        processChildrenColDefs(data) {
+            this.eventGrid.gridOptions.detailCellRendererParams.detailGridOptions.columnDefs = Object.keys(data).map(key => ({
+                headerName: key.replace(/_/g, ' ').replace(/\$+/g, '').replace(/([a-z])([A-Z])/g, '$1 $2'), // 使列名更易读
+                field: key,  // 确保 field 名称为小写
+                sortable: true,
+                filter: true,
+                resizable: true
+            }));
+        },
+        getDefaultDateRange() {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+            return [formatDate(start), formatDate(end)];
+        },
     }
 }
 </script>
+
+<style scoped>
+::v-deep .ag-details-row {
+    padding: 0px 0px 0px 20px;
+}
+
+::v-deep .ag-theme-alpine .ag-layout-auto-height .ag-center-cols-clipper, .ag-theme-alpine .ag-layout-auto-height .ag-center-cols-container, .ag-theme-alpine .ag-layout-print .ag-center-cols-clipper, .ag-theme-alpine .ag-layout-print .ag-center-cols-container, .ag-theme-alpine-dark .ag-layout-auto-height .ag-center-cols-clipper, .ag-theme-alpine-dark .ag-layout-auto-height .ag-center-cols-container, .ag-theme-alpine-dark .ag-layout-print .ag-center-cols-clipper, .ag-theme-alpine-dark .ag-layout-print .ag-center-cols-container {
+    min-height: 45px;
+}
+</style>

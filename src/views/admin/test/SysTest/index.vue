@@ -1,28 +1,44 @@
 <template>
     <div>
         <el-button @click="getEventByProperties">获取事件信息</el-button>
-        <br>
-        <el-date-picker
-            v-model="datetimeScope"
-            type="datetimerange"
-            :picker-options="pickerOptions"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            value-format="yyyy-MM-dd HH:mm:ss">
-        </el-date-picker>
-        <div v-if="grid.rowData.length">
+        <my-dialog
+            :title="eventGrid.title"
+            :visible.sync="eventGrid.visible"
+            top="10%"
+            width="90%"
+            @submit="eventGrid.visible=false">
+            <template v-slot:title-slot>
+                <a type="primary" :href="eventGrid.linkUrl" target="_blank"
+                   style="color: inherit; text-decoration: none;">
+                    <span style="color: deepskyblue">{{ eventGrid.title }}</span>
+                </a>
+            </template>
+            <el-row>
+                <el-col :span="7">
+                    <el-date-picker
+                        v-model="eventGrid.datetimeScope"
+                        type="datetimerange"
+                        :picker-options="pickerOptions"
+                        range-separator="至"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期"
+                        value-format="yyyy-MM-dd HH:mm:ss">
+                    </el-date-picker>
+                </el-col>
+                <el-col :span="7">
+                    <dict-select :field="'status'" :name="'事件状态'"
+                                 :model="configData"
+                                 :dict-select="{dictCode:'google.sheet.configuration.status'}"/>
+                </el-col>
+            </el-row>
             <ag-grid-vue
                 class="ag-theme-alpine"
                 style="width: 100%; height: 400px;"
-                :columnDefs="grid.columnDefs"
-                :rowData="grid.rowData"
-                :gridOptions="grid.gridOptions">
+                :columnDefs="eventGrid.columnDefs"
+                :rowData="eventGrid.rowData"
+                :gridOptions="eventGrid.gridOptions">
             </ag-grid-vue>
-        </div>
-        <div v-else>
-            <p>No data fetched yet.</p>
-        </div>
+        </my-dialog>
     </div>
 </template>
 
@@ -32,9 +48,11 @@ import MyDialog from "@/components/Dialog/index.vue";
 import {
     formatDate,
 } from "@/common/utils/validate";
+import DictSelect from "@/components/Select/DictSelect.vue";
+import DataSelect from "@/components/Select/DataSelect.vue";
 
 export default {
-    components: {MyDialog},
+    components: {DataSelect, DictSelect, MyDialog},
     data() {
         return {
             configData: {
@@ -42,10 +60,6 @@ export default {
                 sourceUrl: "15nnoeazZ52Q5HKZBP6c9sOgoVZD24p8Qa-HMLLQrNE4",
                 sourceSheet: "PA_ALL",
             },
-            apiKey: "phx_apIWBmYRALmdzndWYpV1lh1X5V6hitAFKqjLtq4799DgO81",
-            host: "https://us.posthog.com",
-            project: "85867",
-            datetimeScope: this.getDefaultDateRange(),
             pickerOptions: {
                 shortcuts: [
                     {
@@ -56,13 +70,16 @@ export default {
                             picker.$emit('pick', [start, end]);
                         }
                     },
-                    // Other shortcuts...
                 ]
             },
-            grid: {
+            eventGrid: {
+                host: "https://us.posthog.com",
+                project: "85867",
+                apiKey: "phx_apIWBmYRALmdzndWYpV1lh1X5V6hitAFKqjLtq4799DgO81",
                 visible: false,
                 linkUrl: "https://docs.google.com/spreadsheets/u/0/",
                 title: "测试",
+                datetimeScope: this.getDefaultDateRange(),
                 gridOptions: {
                     enableRangeSelection: true,
                     enableClipboard: true,
@@ -88,7 +105,7 @@ export default {
     },
     methods: {
         async getEventByProperties() {
-            const url = `${this.host}/api/projects/${this.project}/query/`;
+            const url = `${this.eventGrid.host}/api/projects/${this.eventGrid.project}/query/`;
             const body = {
                 query: {
                     kind: "HogQLQuery",
@@ -98,22 +115,25 @@ export default {
                               and properties.sourceUrl = '${this.configData.sourceUrl}'
                               and properties.sourceSheet = '${this.configData.sourceSheet}'
                               and timestamp
-                                > '${this.datetimeScope[0]}'
+                                > '${this.eventGrid.datetimeScope[0]}'
                               and timestamp
-                                < '${this.datetimeScope[1]}'
+                                < '${this.eventGrid.datetimeScope[1]}'
                             order by timestamp asc`
                 }
             };
             const config = {
                 headers: {
                     'Content-Type': "application/json",
-                    'Authorization': `Bearer ${this.apiKey}`,
+                    'Authorization': `Bearer ${this.eventGrid.apiKey}`,
                 }
             };
 
             try {
                 const response = await axios.post(url, body, config);
                 this.processData(response.data.types, response.data.results);
+                this.eventGrid.title = "【来源】：" + this.configData.sourceUrl + "   【页签】：" + this.configData.sourceSheet
+                this.eventGrid.linkUrl = "https://docs.google.com/spreadsheets/d/" + this.configData.sourceUrl
+                this.eventGrid.visible = true;
             } catch (error) {
                 console.error('Error fetching data:', error);
                 this.data = `Failed to fetch data: ${error.message}`;
@@ -122,7 +142,7 @@ export default {
         processData(columnDefsList, data) {
             if (!data.length) return;
 
-            this.grid.columnDefs = columnDefsList.map(([field, type]) => ({
+            this.eventGrid.columnDefs = columnDefsList.map(([field, type]) => ({
                 headerName: field.replace(/_/g, ' ').replace(/\$+/g, '').replace(/([a-z])([A-Z])/g, '$1 $2'),
                 field: field.toLowerCase(),
                 sortable: true,
@@ -132,7 +152,7 @@ export default {
             }));
 
             let flag = true; // 控制只执行一次
-            this.grid.rowData = data.map(row => {
+            this.eventGrid.rowData = data.map(row => {
                 let rowData = {};
                 columnDefsList.forEach(([field], index) => {
                     if (field.toLowerCase() === "properties") {
@@ -157,7 +177,7 @@ export default {
             });
         },
         processChildrenColDefs(data) {
-            this.grid.gridOptions.detailCellRendererParams.detailGridOptions.columnDefs = Object.keys(data).map(key => ({
+            this.eventGrid.gridOptions.detailCellRendererParams.detailGridOptions.columnDefs = Object.keys(data).map(key => ({
                 headerName: key.replace(/_/g, ' ').replace(/\$+/g, '').replace(/([a-z])([A-Z])/g, '$1 $2'), // 使列名更易读
                 field: key,  // 确保 field 名称为小写
                 sortable: true,
