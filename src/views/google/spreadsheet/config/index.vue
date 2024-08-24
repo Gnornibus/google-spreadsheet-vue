@@ -1367,7 +1367,7 @@ export default {
                                 > '${this.eventGrid.datetimeScope[0]}'
                               and timestamp
                                 < '${this.eventGrid.datetimeScope[1]}'
-                            order by timestamp asc`
+                            order by timestamp desc`
                 }
             };
             const config = {
