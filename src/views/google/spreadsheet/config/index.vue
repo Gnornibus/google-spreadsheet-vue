@@ -479,7 +479,7 @@ export default {
                         {
                             name: "发起",
                             type: 'success',
-                            permission: '040106',
+                            permission: '040111',
                             handleRowClick: (index, row) => {
                                 this.$confirm("确认要发起运算嘛？" + row.spreadsheetId, i18n.t('common.messageBox.tips'), {
                                     confirmButtonText: i18n.t('common.btn.confirmBtnName'),
@@ -503,7 +503,7 @@ export default {
                         {
                             name: "事件",
                             type: 'primary',
-                            permission: '040106',
+                            permission: '040112',
                             handleRowClick: (index, row) => {
                                 this.eventGrid.currenObj = row;
                                 this.getEventByProperties(row)
@@ -512,7 +512,7 @@ export default {
                         {
                             name: "配置",
                             type: 'primary',
-                            permission: '040106',
+                            permission: '040113',
                             handleRowClick: (index, row) => {
                                 getCacheSpreadsheetContent({
                                     "sourceUrl": row.sourceUrl,
@@ -539,7 +539,7 @@ export default {
                         {
                             name: "复制",
                             type: 'primary',
-                            permission: '040102,040106',
+                            permission: '040114',
                             handleRowClick: (index, row) => {
                                 selectGoogleSheetConfig({id: row.id}).then((res) => {
                                     this.modifyDialogData.title = "复制";
@@ -565,7 +565,7 @@ export default {
                         {
                             name: "清缓",
                             type: 'danger',
-                            permission: '040104',
+                            permission: '040115',
                             handleRowClick: (index, row) => {
                                 this.$confirm("确认要清除缓存嘛？" + row.spreadsheetId, i18n.t('common.messageBox.tips'), {
                                     confirmButtonText: i18n.t('common.btn.confirmBtnName'),
