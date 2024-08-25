@@ -1136,6 +1136,7 @@ export default {
                 },
                 columnDefs: [
                     {
+                        width: 200,
                         index: 1,
                         headerName: "事件",
                         field: "event",
@@ -1161,6 +1162,7 @@ export default {
                         resizable: true
                     },
                     {
+                        width: 120,
                         properties: "properties",
                         headerName: "表格名称",
                         field: "sourceSheet",
@@ -1169,6 +1171,7 @@ export default {
                         resizable: true
                     },
                     {
+                        width: 120,
                         properties: "properties",
                         headerName: "表格编号",
                         field: "sourceSheetId",
@@ -1177,9 +1180,19 @@ export default {
                         resizable: true
                     },
                     {
+                        width: 400,
                         properties: "properties",
                         headerName: "电子表格",
                         field: "sourceUrl",
+                        sortable: true,
+                        filter: true,
+                        resizable: true
+                    },
+                    {
+                        width: 1000,
+                        properties: "properties",
+                        headerName: "描述",
+                        field: "message",
                         sortable: true,
                         filter: true,
                         resizable: true
