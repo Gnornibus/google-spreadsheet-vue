@@ -30,7 +30,7 @@
                 width="50"
             />
             <!-- 表格列表项 -->
-            <template v-for="item in dataSource.columns">
+            <template v-for="item in dataSource.columns" v-if="item.hide!==true">
                 <!-- 表格的列展示，特殊情况处理：比如要输入框，显示图片 -->
                 <!-- 需要特殊颜色框显示 -->
                 <el-table-column
@@ -126,6 +126,29 @@
                                      :model="row" :data-select="item.isDataSelect"/>
                     </template>
                 </el-table-column>
+                <!-- 字典映射 -->
+                <el-table-column
+                    v-else-if="item.isLink"
+                    :prop="item.key"
+                    :width="item.width || 140"
+                    align="center"
+                    show-overflow-tooltip
+                    v-bind="item">
+                    <template v-slot="{row, column}" v-if="item.showField">
+                        <!--TODO 行编辑功能没有返回值-->
+                        <el-link v-show="!row.editable" type="primary" :href="row[item.valueField]" target="_blank">
+                            {{ row[item.showField] | dataFilter }}
+                        </el-link>
+                        <el-input v-show="row.editable" v-model="row[item.valueField]"></el-input>
+                    </template>
+                    <template v-slot="{row, column}" v-else>
+                        <!--TODO 行编辑功能没有返回值-->
+                        <el-link v-show="!row.editable" type="primary" :href="row[item.key]" target="_blank">
+                            {{ row[item.key] | dataFilter }}
+                        </el-link>
+                        <el-input v-show="row.editable" v-model="row[item.key]"></el-input>
+                    </template>
+                </el-table-column>
                 <!-- 大部分适用 -->
                 <el-table-column
                     v-else
@@ -143,7 +166,7 @@
             <!-- 表格操作列，没有数据时候不固定列 -->
             <el-table-column
                 v-if="dataSource.operation.data.length>0"
-                :fixed="(dataSource.data && dataSource.data.length && $store.getters.device === desktopDevices) ? 'right' : false"
+                :fixed="(dataSource.data && dataSource.data.length && $store.getters.device === desktopDevices && dataSource.operation.fixed !== false ) ? 'right' : false"
                 :label="dataSource.operation.label"
                 :show-overflow-tooltip="dataSource.operation.overflowTooltip"
                 :width="dataSource.operation.width"

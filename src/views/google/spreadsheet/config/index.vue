@@ -74,10 +74,7 @@
             width="90%"
             @submit="cacheGrid.visible=false">
             <template v-slot:title-slot>
-                <a type="primary" :href="cacheGrid.linkUrl" target="_blank"
-                   style="color: inherit; text-decoration: none;">
-                    <span style="color: deepskyblue">{{ cacheGrid.title }}</span>
-                </a>
+                <el-link type="primary" :href="cacheGrid.linkUrl" target="_blank">{{ cacheGrid.title }}</el-link>
             </template>
             <ag-grid-vue
                 class="ag-theme-alpine"
@@ -95,10 +92,7 @@
             width="90%"
             @submit="eventGrid.visible=false">
             <template v-slot:title-slot>
-                <a type="primary" :href="eventGrid.linkUrl" target="_blank"
-                   style="color: inherit; text-decoration: none;">
-                    <span style="color: deepskyblue">{{ eventGrid.title }}</span>
-                </a>
+                <el-link type="primary" :href="eventGrid.linkUrl" target="_blank">{{ eventGrid.title }}</el-link>
             </template>
             <el-row>
                 <el-col :span="7">
@@ -360,56 +354,77 @@ export default {
                     {
                         key: 'statusName',
                         label: i18n.t('view.googleSheetConfig.status'),
-                        sortable: true,
+                        sortable: false,
                     },
                     {
                         key: 'remark',
-                        label: i18n.t('view.googleSheetConfig.remark'),
+                        label: "任务名称",
                         sortable: true,
                     },
-                    // {
-                    //     key: 'creUserName',
-                    //     label: i18n.t('view.googleSheetConfig.creUserName'),
-                    //     sortable: true,
-                    // },
-                    // {
-                    //     width: 160,
-                    //     key: 'creTime',
-                    //     label: i18n.t('view.googleSheetConfig.creTime'),
-                    //     sortable: true,
-                    // },
-                    // {
-                    //     key: 'updUserName',
-                    //     label: i18n.t('view.googleSheetConfig.updUserName'),
-                    //     sortable: true,
-                    // },
-                    // {
-                    //     width: 160,
-                    //     key: 'updTime',
-                    //     label: i18n.t('view.googleSheetConfig.updTime'),
-                    //     sortable: true,
-                    // },
                     {
+                        hide: true,
+                        key: 'creUserName',
+                        label: i18n.t('view.googleSheetConfig.creUserName'),
+                        sortable: true,
+                    },
+                    {
+                        hide: true,
+                        width: 160,
+                        key: 'creTime',
+                        label: i18n.t('view.googleSheetConfig.creTime'),
+                        sortable: true,
+                    },
+                    {
+                        hide: true,
+                        key: 'updUserName',
+                        label: i18n.t('view.googleSheetConfig.updUserName'),
+                        sortable: true,
+                    },
+                    {
+                        width: 160,
+                        key: 'updTime',
+                        label: i18n.t('view.googleSheetConfig.updTime'),
+                        sortable: true,
+                    },
+                    {
+                        hide: true,
                         key: 'outputHeaderName',
                         label: i18n.t('view.googleSheetConfig.outputHeader'),
-                        sortable: true,
+                        sortable: false,
                     },
                     {
                         width: 150,
                         key: 'ignoreDriveName',
                         label: i18n.t('view.googleSheetConfig.ignoreDrive'),
-                        sortable: true,
+                        sortable: false,
                     },
                     {
+                        hide: true,
                         width: 350,
                         key: 'sourceUrl',
                         label: i18n.t('view.googleSheetConfig.sourceUrl'),
                         sortable: true,
                     },
                     {
+                        hide: true,
                         key: 'sourceSheet',
                         label: i18n.t('view.googleSheetConfig.sourceSheet'),
                         sortable: true,
+                    },
+                    {
+                        hide: true,
+                        key: 'sourceSheetId',
+                        label: i18n.t('view.googleSheetConfig.sourceSheetId'),
+                        sortable: true,
+                    },
+                    {
+                        width: 350,
+                        key: 'sourceLink',
+                        label: i18n.t('view.googleSheetConfig.sourceLink'),
+                        sortable: true,
+                        isLink: true,
+                        showField: "sourceUrl",
+                        valueField: "sourceLink",
                     },
                     {
                         key: 'dataRange',
@@ -442,15 +457,26 @@ export default {
                         sortable: true,
                     },
                     {
+                        hide: true,
                         width: 350,
                         key: 'targetUrl',
                         label: i18n.t('view.googleSheetConfig.targetUrl'),
                         sortable: true,
                     },
                     {
+                        hide: true,
                         key: 'targetSheet',
                         label: i18n.t('view.googleSheetConfig.targetSheet'),
                         sortable: true,
+                    },
+                    {
+                        width: 350,
+                        key: 'targetLink',
+                        label: i18n.t('view.googleSheetConfig.targetLink'),
+                        sortable: true,
+                        isLink: true,
+                        showField: "targetUrl",
+                        valueField: "targetLink",
                     },
                     {
                         key: 'targetStart',
@@ -474,7 +500,8 @@ export default {
                 // 操作按钮项
                 operation: {
                     label: i18n.t('table.operation'),
-                    width: 80 * 7,
+                    width: 80 * 6,
+                    fixed: true, // 是否固定
                     data: [
                         {
                             name: "发起",
@@ -510,29 +537,18 @@ export default {
                             }
                         },
                         {
-                            name: "配置",
+                            name: i18n.t('common.btn.infoBtnName'),
                             type: 'primary',
-                            permission: '040113',
+                            permission: '040106',
                             handleRowClick: (index, row) => {
                                 getCacheSpreadsheetContent({
                                     "sourceUrl": row.sourceUrl,
                                     "sourceSheet": row.sourceSheet
                                 }).then((res) => {
                                     this.cacheGrid.title = "【来源】：" + row.sourceUrl + "   【页签】：" + row.sourceSheet
-                                    this.cacheGrid.linkUrl = "https://docs.google.com/spreadsheets/d/" + row.sourceUrl
+                                    this.cacheGrid.linkUrl = row.sourceLink
                                     this.processCacheAgGridData(res.data)
                                     this.cacheGrid.visible = true;
-                                })
-                            }
-                        },
-                        {
-                            name: i18n.t('common.btn.infoBtnName'),
-                            type: 'primary',
-                            permission: '040106',
-                            handleRowClick: (index, row) => {
-                                selectGoogleSheetConfig({id: row.id}).then((res) => {
-                                    this.infoDialogData.model = res.data
-                                    this.infoDialogData.visible = true;
                                 })
                             }
                         },
@@ -1118,7 +1134,57 @@ export default {
                         }
                     }
                 },
-                columnDefs: [],
+                columnDefs: [
+                    {
+                        index: 1,
+                        headerName: "事件",
+                        field: "event",
+                        sortable: true,
+                        filter: true,
+                        resizable: true
+                    },
+                    {
+                        hide: true,
+                        index: 2,
+                        headerName: "参数",
+                        field: "properties",
+                        sortable: true,
+                        filter: true,
+                        resizable: true
+                    },
+                    {
+                        index: 3,
+                        headerName: "发生时间",
+                        field: "timestamp",
+                        sortable: true,
+                        filter: true,
+                        resizable: true
+                    },
+                    {
+                        properties: "properties",
+                        headerName: "表格名称",
+                        field: "sourceSheet",
+                        sortable: true,
+                        filter: true,
+                        resizable: true
+                    },
+                    {
+                        properties: "properties",
+                        headerName: "表格编号",
+                        field: "sourceSheetId",
+                        sortable: true,
+                        filter: true,
+                        resizable: true
+                    },
+                    {
+                        properties: "properties",
+                        headerName: "电子表格",
+                        field: "sourceUrl",
+                        sortable: true,
+                        filter: true,
+                        resizable: true
+                    }
+                ],
                 rowData: []
             },
             pickerOptions: {
@@ -1157,7 +1223,8 @@ export default {
          */
         async init() {
             // 获取列表
-            await this.queryPage()
+            await this.queryPage();
+            this.eventGrid.datetimeScope = this.getDefaultDateRange();
         },
 
         /**
@@ -1379,16 +1446,47 @@ export default {
 
             try {
                 const response = await axios.post(url, body, config);
-                this.processData(response.data.types, response.data.results);
+                this.processData(response.data.results);
                 this.eventGrid.title = "【来源】：" + this.eventGrid.currenObj.sourceUrl + "   【页签】：" + this.eventGrid.currenObj.sourceSheet
-                this.eventGrid.linkUrl = "https://docs.google.com/spreadsheets/d/" + this.eventGrid.currenObj.sourceUrl
+                this.eventGrid.linkUrl = this.eventGrid.currenObj.sourceLink
                 this.eventGrid.visible = true;
             } catch (error) {
                 console.error('Error fetching data:', error);
                 this.data = `Failed to fetch data: ${error.message}`;
             }
         },
-        processData(columnDefsList, data) {
+        processData(data) {
+            if (!data.length) return;
+
+            this.eventGrid.rowData = data.map(entry => {
+                let rowData = {};
+                this.eventGrid.columnDefs.forEach(def => {
+                    // 先判断是否处理 JSON 数据
+                    if (def.field === "properties" && def.index !== undefined) {
+                        // 特别处理 properties 字段，因为它包含 JSON 字符串
+                        rowData[def.field] = JSON.parse(entry[def.index]);
+                    } else if (def.properties) {
+                        // 如果有 children 属性，处理嵌套的 JSON 数据
+                        let propertiesObject = rowData["properties"] || JSON.parse(entry[def.index]);  // 优先使用已解析的 properties
+                        rowData[def.field] = propertiesObject && propertiesObject[def.field] !== undefined ? propertiesObject[def.field] : null;
+                    } else if (def.index !== undefined) {
+                        // 直接从 entry 中按 index 取值
+                        rowData[def.field] = entry[def.index];
+                    }
+                });
+                return rowData;
+            });
+        },
+
+        parseProperties(jsonString) {
+            try {
+                return JSON.parse(jsonString);
+            } catch (e) {
+                console.error('Error parsing properties:', e);
+                return {};
+            }
+        },
+        processColDefs(columnDefsList, data) {
             if (!data.length) return;
 
             this.eventGrid.columnDefs = columnDefsList.map(([field, type]) => ({

@@ -15,6 +15,8 @@ export default {
         ignoreDrive: "Drive时间检查",
         sourceUrl: "输入url",
         sourceSheet: "输入sheet",
+        sourceSheetId: "输入sheet编号",
+        sourceLink: "输入sheet地址",
         dataRange: "输入数据范围",
         judgeCondition: "输出判断条件",
         compareField: "first和last比较日期类型字段",
@@ -23,6 +25,8 @@ export default {
         cron: "输出频率",
         targetUrl: "输出url",
         targetSheet: "输出sheet",
+        targetSheetId: "输出sheet编号",
+        targetLink: "输出sheet地址",
         targetStart: "输出起始格",
     },
 }
