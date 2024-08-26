@@ -532,7 +532,8 @@ export default {
                             type: 'primary',
                             permission: '040112',
                             handleRowClick: (index, row) => {
-                                this.eventGrid.currenObj = row;
+                                this.eventGrid.currenObj = JSON.parse(JSON.stringify(row));
+                                this.eventGrid.currenObj.status = '';
                                 this.getEventByProperties(row)
                             }
                         },
