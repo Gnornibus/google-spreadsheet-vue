@@ -1,6 +1,6 @@
 <template>
     <div>
-        <search-pane :filter-data="filterData" :sort="this.dataSource.sort"/>
+        <search-pane :filter-data="filterData" :sort="this.dataSource.sort" />
         <table-pane
             ref="myTable"
             :data-source="dataSource"
@@ -37,14 +37,14 @@
             :required="false"
             :width="dialogWidth"
             @close="queryPage()"
-            @submit="()=>{this.infoDialogData.visible=false}"/>
+            @submit="()=>{this.infoDialogData.visible=false}" />
         <my-dialog
             :fullscreen="batchDialogData.fullscreen"
             :title="$t('common.dialog.dialogBatchTitle')"
             :visible.sync="batchDialogData.visible"
             :width="batchDialogData.width"
             @submit="batchAdd">
-            <upload-excel-component :excelData="batchDialogData.excelData"/>
+            <upload-excel-component :excelData="batchDialogData.excelData" />
         </my-dialog>
         <my-dialog
             :title="cacheGrid.title"
@@ -109,7 +109,7 @@
                 <el-col :span="7">
                     <dict-select :field="'status'" :name="'事件状态'"
                                  :model="eventGrid.currenObj"
-                                 :dict-select="{dictCode:'google.sheet.configuration.status'}"/>
+                                 :dict-select="{dictCode:'google.sheet.configuration.status'}" />
                 </el-col>
                 <el-col :span="7">
                     <el-button type="primary" @click="getEventByProperties(eventGrid.currenObj)">查询</el-button>
@@ -418,7 +418,7 @@ export default {
                         sortable: true,
                     },
                     {
-                        width: 350,
+                        width: 400,
                         key: 'sourceLink',
                         label: i18n.t('view.googleSheetConfig.sourceLink'),
                         sortable: true,
@@ -470,7 +470,7 @@ export default {
                         sortable: true,
                     },
                     {
-                        width: 350,
+                        width: 400,
                         key: 'targetLink',
                         label: i18n.t('view.googleSheetConfig.targetLink'),
                         sortable: true,
@@ -1120,6 +1120,31 @@ export default {
                     enableRangeSelection: true,
                     enableClipboard: true,
                     masterDetail: true,
+                    sideBar: {
+                        toolPanels: [
+                            {
+                                id: 'columns',
+                                labelDefault: 'Columns',
+                                labelKey: 'columns',
+                                iconKey: 'columns',
+                                toolPanel: 'agColumnsToolPanel',
+                                toolPanelParams: {
+                                    suppressRowGroups: true,
+                                    suppressValues: true,
+                                    suppressPivots: true,
+                                    suppressPivotMode: true
+                                }
+                            },
+                            {
+                                id: 'filters',
+                                labelDefault: 'Filters',
+                                labelKey: 'filters',
+                                iconKey: 'filter',
+                                toolPanel: 'agFiltersToolPanel',
+                            }
+                        ],
+                        defaultToolPanel: ''
+                    },
                     detailCellRendererParams: {
                         detailGridOptions: {
                             columnDefs: [],
@@ -1435,21 +1460,33 @@ export default {
 
         async getEventByProperties() {
             const url = `${this.eventGrid.host}/api/projects/${this.eventGrid.project}/query/`;
+
+            // 开始动态构建查询字符串
+            let queryString = `select * from events where `;
+            // 开始构建查询条件，基础条件是事件状态和时间范围
+            let conditions = [];
+
+            // 如果 this.configData.status 不为空，则添加这个查询条件
+            if (this.eventGrid.currenObj.status) {
+                conditions.push(`event = '${this.eventGrid.currenObj.status}'`);
+            }
+
+            // 添加其他固定条件
+            conditions.push(`properties.sourceUrl = '${this.eventGrid.currenObj.sourceUrl}'`);
+            conditions.push(`properties.sourceSheet = '${this.eventGrid.currenObj.sourceSheet}'`);
+            conditions.push(`timestamp > '${this.eventGrid.datetimeScope[0]}'`);
+            conditions.push(`timestamp < '${this.eventGrid.datetimeScope[1]}'`);
+
+            // 将查询条件组合成完整的查询字符串
+            queryString += conditions.join(" and ") + " order by timestamp desc";
+
             const body = {
                 query: {
                     kind: "HogQLQuery",
-                    query: `select *
-                            from events
-                            where event = '${this.eventGrid.currenObj.status}'
-                              and properties.sourceUrl = '${this.eventGrid.currenObj.sourceUrl}'
-                              and properties.sourceSheet = '${this.eventGrid.currenObj.sourceSheet}'
-                              and timestamp
-                                > '${this.eventGrid.datetimeScope[0]}'
-                              and timestamp
-                                < '${this.eventGrid.datetimeScope[1]}'
-                            order by timestamp desc`
+                    query: queryString
                 }
             };
+
             const config = {
                 headers: {
                     'Content-Type': "application/json",
@@ -1460,12 +1497,12 @@ export default {
             try {
                 const response = await axios.post(url, body, config);
                 this.processData(response.data.results);
-                this.eventGrid.title = "【来源】：" + this.eventGrid.currenObj.sourceUrl + "   【页签】：" + this.eventGrid.currenObj.sourceSheet
-                this.eventGrid.linkUrl = this.eventGrid.currenObj.sourceLink
+                this.eventGrid.title = `【来源】：${this.eventGrid.currenObj.sourceUrl}   【页签】：${this.eventGrid.currenObj.sourceSheet}`;
+                this.eventGrid.linkUrl = this.eventGrid.currenObj.sourceLink;
                 this.eventGrid.visible = true;
             } catch (error) {
-                console.error('Error fetching data:', error);
-                this.data = `Failed to fetch data: ${error.message}`;
+                console.error('请求数据时发生错误:', error);
+                this.data = `获取数据失败：${error.message}`;
             }
         },
         processData(data) {
