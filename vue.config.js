@@ -24,7 +24,7 @@ module.exports = {
      * 大多数情况下请使用“/”!！！
      * 细节:https://cli.vuejs.org/config/#publicpath
      */
-    publicPath: process.env.VUE_APP_PUBLIC_PATH,
+    publicPath: '/',
     outputDir: 'dist',
     assetsDir: 'static',
     lintOnSave: process.env.NODE_ENV === 'development',
