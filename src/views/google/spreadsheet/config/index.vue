@@ -153,6 +153,19 @@ import {launchOperation} from "../../../../api/google-sheet-config-api";
 import DictSelect from "@/components/Select/DictSelect.vue";
 import axios from "axios";
 import {formatDate} from "@/common/utils/validate";
+const statusMapping = {
+    "initiate_config": "开始初始化配置",
+    "begin_caching": "开始缓存表格数据",
+    "complete_caching": "完成缓存表格数据",
+    "begin_drive_read": "开始到drive读取数据",
+    "complete_drive_read": "完成到drive读取数据",
+    "begin_processing": "开始运算执行",
+    "complete_processing": "完成运算执行",
+    "begin_persisting": "开始数据服务入库",
+    "complete_persisting": "完成数据服务入库",
+    "complete_config": "完成配置执行",
+    "exception_status": "状态异常"
+};
 
 export default {
     name: 'GoogleConfig',
@@ -1168,7 +1181,8 @@ export default {
                         field: "event",
                         sortable: true,
                         filter: true,
-                        resizable: true
+                        resizable: true,
+                        valueFormatter: params => statusMapping[params.value] || params.value
                     },
                     {
                         hide: true,
