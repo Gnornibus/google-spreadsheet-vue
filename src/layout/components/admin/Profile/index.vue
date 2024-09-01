@@ -8,7 +8,7 @@
             <!-- 头像信息 -->
             <div class="user-profile">
                 <div class="box-center">
-                    <pan-thumb :hoverable="false" :image="user.avatar | imageFileFilter" />
+                    <pan-thumb :hoverable="false" :image="user.avatar | imageFileFilter"/>
                 </div>
                 <div class="box-center">
                     <div class="user-name text-center">{{ user.name | dataFilter }}</div>
@@ -19,38 +19,38 @@
             <div class="user-bio">
                 <div class="user-education user-bio-section">
                     <div class="user-bio-section-header">
-                        <svg-icon icon-class="education" />
+                        <svg-icon icon-class="education"/>
                         <span>账户: </span>{{ user.account | dataFilter }}
                     </div>
                 </div>
                 <div class="user-education user-bio-section">
                     <div class="user-bio-section-header">
-                        <svg-icon icon-class="education" />
+                        <svg-icon icon-class="education"/>
                         <span>手机号: </span>{{ user.mobile | dataFilter }}
                     </div>
                 </div>
                 <div class="user-education user-bio-section">
                     <div class="user-bio-section-header">
-                        <svg-icon icon-class="education" />
+                        <svg-icon icon-class="education"/>
                         <span>邮箱: </span>{{ user.email | dataFilter }}
                     </div>
                 </div>
                 <div class="user-education user-bio-section">
                     <div class="user-bio-section-header">
-                        <svg-icon icon-class="education" />
+                        <svg-icon icon-class="education"/>
                         <span>登录次数: </span>{{ user.loginCount | dataFilter }}
                     </div>
                 </div>
                 <div class="user-education user-bio-section">
                     <div class="user-bio-section-header">
-                        <svg-icon icon-class="education" />
+                        <svg-icon icon-class="education"/>
                         <span>上次登录IP地址: </span>{{ user.oldLoginIpAddress | dataFilter }}
                     </div>
                 </div>
 
                 <div class="user-education user-bio-section">
                     <div class="user-bio-section-header">
-                        <svg-icon icon-class="education" />
+                        <svg-icon icon-class="education"/>
                         <span>上次登录时间：</span>{{ user.oldLoginTime | dataFilter }}
                     </div>
                 </div>
@@ -71,7 +71,8 @@
                     class="avatar-uploader"
                     @uploadChange="handleUploadChange"
                     @uploadSuccess="handleUploadSuccess">
-                    <el-image v-if="editUser.imageUrl" :src="editUser.imageUrl | imageFileFilter" alt="头像" class="avatar"/>
+                    <el-image v-if="editUser.imageUrl" :src="editUser.imageUrl | imageFileFilter" alt="头像"
+                              class="avatar"/>
                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                 </image-upload>
                 <el-form
@@ -80,13 +81,13 @@
                     :rules="sonEditFormRules"
                     style="padding: 0 5%">
                     <el-form-item label="用户名" prop="name">
-                        <el-input v-model="editUser.name" :placeholder="user.name" />
+                        <el-input v-model="editUser.name" :placeholder="user.name"/>
                     </el-form-item>
                     <el-form-item label="手机号" prop="mobile">
-                        <el-input v-model="editUser.mobile" :placeholder="user.mobile" />
+                        <el-input v-model="editUser.mobile" :placeholder="user.mobile"/>
                     </el-form-item>
                     <el-form-item label="邮箱" prop="email">
-                        <el-input v-model="editUser.email" :placeholder="user.email" />
+                        <el-input v-model="editUser.email" :placeholder="user.email"/>
                     </el-form-item>
                 </el-form>
                 <el-footer style="text-align: center;">
@@ -101,13 +102,13 @@
                 title="修改密码">
                 <el-form ref="sonEditPwdForm" :model="editUserPwd" :rules="sonEditPwdFormRules" style="padding: 0 5%">
                     <el-form-item label="输入旧密码" prop="oldPassword">
-                        <el-input v-model="editUserPwd.oldPassword" type="password" />
+                        <el-input v-model="editUserPwd.oldPassword" type="password"/>
                     </el-form-item>
                     <el-form-item label="输入新密码" prop="newPassword">
-                        <el-input v-model="editUserPwd.newPassword" type="password" />
+                        <el-input v-model="editUserPwd.newPassword" type="password"/>
                     </el-form-item>
                     <el-form-item label="确认新密码" prop="renewPassword">
-                        <el-input v-model="editUserPwd.renewPassword" type="password" />
+                        <el-input v-model="editUserPwd.renewPassword" type="password"/>
                     </el-form-item>
                 </el-form>
                 <el-footer style="text-align: center;">
@@ -225,19 +226,22 @@ export default {
                 this.user = res.data
             })
         },
+        // 打开修改信息的抽屉
         infoEdit() {
             this.infoSize = '40%';
             this.sonInfoVisible = true;
-            this.editUser.id = this.user.id;
+            this.editUser.id = this.user.id;  // 确保用户ID在编辑信息时被正确传递
             this.editUser.avatar = this.user.avatar;
             this.editUser.imageUrl = this.user.avatar;
             this.editUser.name = this.user.name;
             this.editUser.mobile = this.user.mobile;
             this.editUser.email = this.user.email;
         },
+        // 打开修改密码的抽屉
         infoEditPwd() {
-            this.infoSize = '40%'
-            this.sonInfoPwdVisible = true
+            this.infoSize = '40%';
+            this.sonInfoPwdVisible = true;
+            this.editUserPwd.id = this.user.id;  // 确保用户ID在编辑密码时被正确传递
         },
         sonClose(done) {
             this.$confirm("当前操作数据未更新！", i18n.t('common.messageBox.tips'), {
@@ -250,7 +254,7 @@ export default {
             }).catch(_ => {
             });
         },
-        // 确认修改
+        // 确认修改信息
         sonSubmit() {
             this.$refs.sonEditForm.validate(valid => {
                 if (valid) {
@@ -268,6 +272,36 @@ export default {
                 }
             });
         },
+        // 确认修改密码
+        sonPwdSubmit() {
+            this.$refs.sonEditPwdForm.validate(valid => {
+                if (valid) {
+                    modifyPwd(this.editUserPwd).then((res) => {
+                        if (res.data) {
+                            this.$message.success(i18n.t('common.success'));
+                            this.sonInfoPwdVisible = false;
+                        } else {
+                            this.$message.error(i18n.t('common.error') + ":" + res.data);
+                        }
+                    });
+                } else {
+                    this.$message.error("请正确填写所有必填字段。");
+                    return false;
+                }
+            });
+        },
+        // 关闭修改密码的抽屉
+        sonPwdClose(done) {
+            this.$confirm("当前操作数据未更新！", i18n.t('common.messageBox.tips'), {
+                confirmButtonText: i18n.t('common.btn.confirmBtnName'),
+                cancelButtonText: i18n.t('common.btn.cancelBtnName'),
+                type: 'warning'
+            }).then(_ => {
+                this.infoSize = '30%'
+                done();
+            }).catch(_ => {
+            });
+        },
         // 保存用户信息
         saveUserInfo() {
             saveSysUser(this.editUser).then((res) => {
@@ -281,35 +315,6 @@ export default {
                 } else {
                     this.$message.error(i18n.t('common.error') + ":" + res.data);
                 }
-            });
-        },
-        sonPwdSubmit() {
-            this.$refs.sonEditPwdForm.validate(valid => {
-                if (valid) {
-                    this.editUserPwd.id = this.id
-                    modifyPwd(this.editUserPwd).then((res) => {
-                        if (res.data) {
-                            this.$message.success(i18n.t('common.success'));
-                            this.sonInfoPwdVisible = false;
-                        } else {
-                            this.$message.error(i18n.t('common.error') + ":" + res.data);
-                        }
-                    })
-                } else {
-                    this.$message.error("请正确填写所有必填字段。");
-                    return false;
-                }
-            })
-        },
-        sonPwdClose(done) {
-            this.$confirm("当前操作数据未更新！", i18n.t('common.messageBox.tips'), {
-                confirmButtonText: i18n.t('common.btn.confirmBtnName'),
-                cancelButtonText: i18n.t('common.btn.cancelBtnName'),
-                type: 'warning'
-            }).then(_ => {
-                this.infoSize = '30%'
-                done();
-            }).catch(_ => {
             });
         },
     },
