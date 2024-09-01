@@ -546,7 +546,7 @@ export default {
                             permission: '040112',
                             handleRowClick: (index, row) => {
                                 this.eventGrid.currenObj = JSON.parse(JSON.stringify(row));
-                                this.eventGrid.currenObj.status = '';
+                                this.eventGrid.currenObj.status = 'exception_status';
                                 this.getEventByProperties(row)
                             }
                         },
@@ -576,6 +576,7 @@ export default {
                                     this.modifyDialogData.model = res.data
                                     this.$set(this.modifyDialogData.model, 'id', "")
                                     this.$set(this.modifyDialogData.model, 'spreadsheetId', "")
+                                    this.$set(this.modifyDialogData.model, 'status', "")
                                     this.modifyDialogData.visible = true;
                                 })
                             }
@@ -1609,7 +1610,7 @@ export default {
 
 <style scoped>
 ::v-deep .ag-details-row {
-    padding: 0px 0px 0px 20px;
+    padding: 0 0 0 20px;
 }
 
 ::v-deep .ag-theme-alpine .ag-layout-auto-height .ag-center-cols-clipper, .ag-theme-alpine .ag-layout-auto-height .ag-center-cols-container, .ag-theme-alpine .ag-layout-print .ag-center-cols-clipper, .ag-theme-alpine .ag-layout-print .ag-center-cols-container, .ag-theme-alpine-dark .ag-layout-auto-height .ag-center-cols-clipper, .ag-theme-alpine-dark .ag-layout-auto-height .ag-center-cols-container, .ag-theme-alpine-dark .ag-layout-print .ag-center-cols-clipper, .ag-theme-alpine-dark .ag-layout-print .ag-center-cols-container {
