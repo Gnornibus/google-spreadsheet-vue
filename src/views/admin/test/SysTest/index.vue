@@ -5,8 +5,9 @@
         :columnDefs="columnDefs"
         :rowData="rowData"
         :defaultColDef="defaultColDef"
-        @grid-ready="onGridReady"
-    ></ag-grid-vue>
+        :gridOptions="historyGrid.gridOptions"
+        @grid-ready="onGridReady">
+    </ag-grid-vue>
 </template>
 
 <script>
@@ -19,6 +20,43 @@ export default {
     },
     data() {
         return {
+            // 缓存弹框配置
+            historyGrid: {
+                visible: false,
+                linkUrl: "https://docs.google.com/spreadsheets/u/0/",
+                title: "测试",
+                gridOptions: {
+                    enableRangeSelection: true,
+                    enableClipboard: true,
+                    sideBar: {
+                        toolPanels: [
+                            {
+                                id: 'columns',
+                                labelDefault: 'Columns',
+                                labelKey: 'columns',
+                                iconKey: 'columns',
+                                toolPanel: 'agColumnsToolPanel',
+                                toolPanelParams: {
+                                    suppressRowGroups: true,
+                                    suppressValues: true,
+                                    suppressPivots: true,
+                                    suppressPivotMode: true
+                                }
+                            },
+                            {
+                                id: 'filters',
+                                labelDefault: 'Filters',
+                                labelKey: 'filters',
+                                iconKey: 'filter',
+                                toolPanel: 'agFiltersToolPanel',
+                            }
+                        ],
+                        defaultToolPanel: 'columns'
+                    }
+                },
+                columnDefs: "",
+                rowData: [],
+            },
             gridApi: null,
             gridColumnApi: null,
             originalRowData: [
