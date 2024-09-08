@@ -6,7 +6,7 @@
             <ag-grid-vue
                 class="ag-theme-alpine"
                 style="width: 100%; height: 300px;"
-                :columnDefs="originalColumnDefs"
+                :columnDefs="simpleColumnDefs(originalRowData[0],false)"
                 :rowData="prepareRowData(originalRowData)"
                 :defaultColDef="defaultColDef"
                 :gridOptions="historyGrid.gridOptions">
@@ -15,7 +15,7 @@
             <ag-grid-vue
                 class="ag-theme-alpine"
                 style="width: 100%; height: 300px;"
-                :columnDefs="comparisonColumnDefs"
+                :columnDefs="simpleColumnDefs(comparisonRowData[0],false)"
                 :rowData="prepareRowData(comparisonRowData)"
                 :defaultColDef="defaultColDef"
                 :gridOptions="historyGrid.gridOptions">
@@ -25,7 +25,7 @@
         <ag-grid-vue
             class="ag-theme-alpine"
             style="width: 100%; height: 600px;"
-            :columnDefs="originalColumnDefs"
+            :columnDefs="simpleColumnDefs(originalRowData[0],true)"
             :rowData="prepareRowData(originalRowData)"
             :defaultColDef="defaultColDef"
             :gridOptions="historyGrid.gridOptions"
@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { AgGridVue } from 'ag-grid-vue';
+import {AgGridVue} from 'ag-grid-vue';
 
 export default {
     name: 'App',
@@ -78,12 +78,14 @@ export default {
                 ["记录编号", "产品ID", "URL"],
                 ["18190022166717372416", "85493226", "1111"],
                 ["18190022166717372416", "854932226", "2222"],
-                ["18190022166717372416", "854932226", "2222"],
+                ["18190022166717372416", "854932226", "3333"],
+                ["18190022166717372416", "854932226", "4444"],
             ],
             comparisonRowData: [
                 ["记录编号", "URL"],
                 ["18190022166717372416", "1111"],
-                ["18190022166717372416", "2222"],
+                ["18190022166717372416", "3333"],
+                ["18190022166717372416", "3333"],
             ],
         };
     },
@@ -94,18 +96,12 @@ export default {
                 sortable: true
             };
         },
-        originalColumnDefs() {
-            return this.createColumnDefs(this.originalRowData[0]);
-        },
-        comparisonColumnDefs() {
-            return this.createColumnDefs(this.comparisonRowData[0]);
-        }
     },
     methods: {
         onGridReady(params) {
             this.gridApi = params.api;
             this.gridColumnApi = params.columnApi;
-            this.gridApi.sizeColumnsToFit();  // 让列宽自适应
+            this.gridApi.sizeColumnsToFit();  // Adjust column widths to fit the grid size
         },
         toggleHistoryGrid() {
             this.historyGrid.visible = !this.historyGrid.visible;
@@ -121,12 +117,15 @@ export default {
                 }, {});
             });
         },
-        createColumnDefs(headers) {
+        createColumnDefs(headers, highlightDifferences) {
             return headers.map(header => ({
                 headerName: header,
                 field: header,
-                cellStyle: (params) => this.computeCellStyle(params, header, headers),
+                cellStyle: highlightDifferences ? (params) => this.computeCellStyle(params, header, headers) : null,
             }));
+        },
+        simpleColumnDefs(headers, flag) {
+            return this.createColumnDefs(headers, flag);
         },
         computeCellStyle(params, header, headers) {
             const comparisonHeaders = this.comparisonRowData[0];
@@ -134,7 +133,7 @@ export default {
             const comparisonIndex = comparisonHeaders.indexOf(header);
             const originalIndex = originalHeaders.indexOf(header);
 
-            // 检查当前列的标题是否仅存在于原始数据或比较数据中
+            // 高亮显示逻辑仅适用于主表格，确保此逻辑被触发
             const isMissingInComparison = originalIndex !== -1 && comparisonIndex === -1;
             const isMissingInOriginal = comparisonIndex !== -1 && originalIndex === -1;
 
@@ -142,19 +141,18 @@ export default {
                 return {backgroundColor: 'orange'}; // 突出显示仅存在于一个标题数组中的标题
             }
 
-            // 比较数据行的值是否不同
             const comparisonRow = this.comparisonRowData[params.node.rowIndex + 1];
             if (!comparisonRow || params.value !== comparisonRow[comparisonIndex]) {
                 return {backgroundColor: 'yellow'}; // 突出显示具有不同值的单元格
             }
             return null;
-        }
+        },
     }
 };
 </script>
 
 <style>
-/* 样式可以根据需求进一步定义 */
+/* Styles can be adjusted according to needs */
 .ag-theme-alpine {
     width: 100%;
     height: 300px;
@@ -164,3 +162,4 @@ export default {
     margin-top: 20px;
 }
 </style>
+
