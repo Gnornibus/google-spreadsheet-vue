@@ -1,38 +1,57 @@
 <template>
-    <div>
-        <el-button type="primary" @click="toggleHistoryGrid">显示/隐藏历史版本比较</el-button>
+    <div >
+        <el-row type="flex" justify="center" class="header-row">
+            <el-button type="primary" @click="toggleHistoryGrid">
+                {{ historyGrid.visible ? '隐藏历史版本比较' : '显示历史版本比较' }}
+            </el-button>
+        </el-row>
         <div v-if="historyGrid.visible" class="history-grid">
-            <!-- 原始数据表格 -->
-            <ag-grid-vue
-                class="ag-theme-alpine"
-                style="width: 100%; height: 300px;"
-                :columnDefs="originalColumnDefs"
-                :rowData="prepareRowData(originalRowData)"
-                :defaultColDef="defaultColDef"
-                :gridOptions="historyGrid.gridOptions"
-                @grid-ready="onGridReady">
-            </ag-grid-vue>
             <!-- 对比数据表格 -->
-            <ag-grid-vue
-                class="ag-theme-alpine"
-                style="width: 100%; height: 300px;"
-                :columnDefs="comparisonColumnDefs"
-                :rowData="prepareRowData(comparisonRowData)"
-                :defaultColDef="defaultColDef"
-                :gridOptions="historyGrid.gridOptions"
-                @grid-ready="onGridReady">
-            </ag-grid-vue>
+            <el-row>
+                <el-col :span="24">
+                    <h2 class="table-header">对比数据表格</h2>
+                    <ag-grid-vue
+                        class="ag-theme-balham"
+                        style="width: 100%; height: 300px;"
+                        :columnDefs="comparisonColumnDefs"
+                        :rowData="prepareRowData(comparisonRowData)"
+                        :defaultColDef="defaultColDef"
+                        :gridOptions="historyGrid.gridOptions"
+                        @grid-ready="onGridReady">
+                    </ag-grid-vue>
+                </el-col>
+            </el-row>
+            <!-- 原始数据表格 -->
+            <el-row>
+                <el-col :span="24">
+                    <h2 class="table-header">原始数据表格</h2>
+                    <ag-grid-vue
+                        class="ag-theme-balham"
+                        style="width: 100%; height: 300px;"
+                        :columnDefs="originalColumnDefs"
+                        :rowData="prepareRowData(originalRowData)"
+                        :defaultColDef="defaultColDef"
+                        :gridOptions="historyGrid.gridOptions"
+                        @grid-ready="onGridReady">
+                    </ag-grid-vue>
+                </el-col>
+            </el-row>
         </div>
         <!-- 主表格 -->
-        <ag-grid-vue
-            class="ag-theme-alpine"
-            style="width: 100%; height: 600px;"
-            :columnDefs="mainColumnDefs"
-            :rowData="prepareRowData(originalRowData)"
-            :defaultColDef="defaultColDef"
-            :gridOptions="historyGrid.gridOptions"
-            @grid-ready="onGridReady">
-        </ag-grid-vue>
+        <el-row v-else>
+            <el-col :span="24">
+                <h2 class="table-header">主数据表格（高亮差异）</h2>
+                <ag-grid-vue
+                    class="ag-theme-balham"
+                    style="width: 100%; height: 600px;"
+                    :columnDefs="mainColumnDefs"
+                    :rowData="prepareRowData(originalRowData)"
+                    :defaultColDef="defaultColDef"
+                    :gridOptions="historyGrid.gridOptions"
+                    @grid-ready="onGridReady">
+                </ag-grid-vue>
+            </el-col>
+        </el-row>
     </div>
 </template>
 
@@ -154,15 +173,33 @@ export default {
 };
 </script>
 
-<style>
-/* Styles can be adjusted according to needs */
-.ag-theme-alpine {
-    width: 100%;
-    height: 300px;
+<style scoped>
+.app-container {
+    margin: 10px;
 }
 
-.history-grid {
-    margin-top: 20px;
+.header-row {
+    margin-bottom: 10px;
+}
+
+.table-header {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 5px; /* 减小标题下的间隔 */
+}
+
+.ag-theme-balham {
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 减少阴影的扩散，使得整体显得更紧凑 */
+}
+
+/* 减少行间距，使得表格间隔更紧凑 */
+.el-row {
+    margin-bottom: 5px;
+}
+
+/* 优化表格内部单元格的内边距，减少单元格间距 */
+.ag-cell {
+    padding: 4px 8px; /* 根据实际需要调整 */
 }
 </style>
-
