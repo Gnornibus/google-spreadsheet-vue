@@ -21,6 +21,7 @@ import BasicToolLang from "@/common/lang/view/zh/BasicToolLang";
 import BasicMessageBoxLang from "@/common/lang/view/zh/BasicMessageBoxLang";
 import BasicTableLang from "@/common/lang/view/zh/BasicTableLang";
 import GoogleConfigLang from "@/common/lang/view/zh/Google/GoogleSheetConfigLang"
+import GoogleSheetConfigHistoryLang from "@/common/lang/view/zh/Google/GoogleSheetConfigHistoryLang"
 
 export default {
     enum: {
@@ -106,5 +107,6 @@ export default {
         ...SysUserLang,
         ...CommonViewLang,
         ...GoogleConfigLang,
+        ...GoogleSheetConfigHistoryLang,
     },
 }

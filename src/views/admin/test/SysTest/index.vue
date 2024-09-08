@@ -1,205 +1,512 @@
 <template>
-    <div >
-        <el-row type="flex" justify="center" class="header-row">
-            <el-button type="primary" @click="toggleHistoryGrid">
-                {{ historyGrid.visible ? '隐藏历史版本比较' : '显示历史版本比较' }}
-            </el-button>
-        </el-row>
-        <div v-if="historyGrid.visible" class="history-grid">
-            <!-- 对比数据表格 -->
-            <el-row>
-                <el-col :span="24">
-                    <h2 class="table-header">对比数据表格</h2>
-                    <ag-grid-vue
-                        class="ag-theme-balham"
-                        style="width: 100%; height: 300px;"
-                        :columnDefs="comparisonColumnDefs"
-                        :rowData="prepareRowData(comparisonRowData)"
-                        :defaultColDef="defaultColDef"
-                        :gridOptions="historyGrid.gridOptions"
-                        @grid-ready="onGridReady">
-                    </ag-grid-vue>
-                </el-col>
-            </el-row>
-            <!-- 原始数据表格 -->
-            <el-row>
-                <el-col :span="24">
-                    <h2 class="table-header">原始数据表格</h2>
-                    <ag-grid-vue
-                        class="ag-theme-balham"
-                        style="width: 100%; height: 300px;"
-                        :columnDefs="originalColumnDefs"
-                        :rowData="prepareRowData(originalRowData)"
-                        :defaultColDef="defaultColDef"
-                        :gridOptions="historyGrid.gridOptions"
-                        @grid-ready="onGridReady">
-                    </ag-grid-vue>
-                </el-col>
-            </el-row>
-        </div>
-        <!-- 主表格 -->
-        <el-row v-else>
-            <el-col :span="24">
-                <h2 class="table-header">主数据表格（高亮差异）</h2>
-                <ag-grid-vue
-                    class="ag-theme-balham"
-                    style="width: 100%; height: 600px;"
-                    :columnDefs="mainColumnDefs"
-                    :rowData="prepareRowData(originalRowData)"
-                    :defaultColDef="defaultColDef"
-                    :gridOptions="historyGrid.gridOptions"
-                    @grid-ready="onGridReady">
-                </ag-grid-vue>
-            </el-col>
-        </el-row>
-    </div>
+  <div>
+    <search-pane :filter-data="filterData" :sort="this.dataSource.sort"/>
+    <table-pane
+        ref="myTable"
+        :data-source="dataSource"
+        :tool="tool"
+        @changeCurrent="changeCurrent"
+        @changeSize="changeSize"
+        @selectionChange="selectionChange"
+        @sortChange="sortChange"
+    />
+    <my-dialog
+        :componentsDisabled="true"
+        :model="infoDialogData.model"
+        :modelItem="infoDialogData.modelItem"
+        :title="$t('common.dialog.dialogInfoTitle')"
+        :visible.sync="infoDialogData.visible"
+        :required="false"
+        :width="dialogWidth"
+        @close="queryPage()"
+        @submit="()=>{this.infoDialogData.visible=false}">
+    </my-dialog>
+  </div>
 </template>
 
 <script>
-import {AgGridVue} from 'ag-grid-vue';
+import searchPane from '@/components/SearchPane';
+import tablePane from '@/components/TablePane';
+import MyDialog from '@/components/Dialog';
+import i18n from '@/common/lang';
+import UploadExcelComponent from '@/components/UploadExcel/index.vue';
+import BackToTop from "@/components/BackToTop";
+import {
+  queryPageGoogleSheetConfigHistory,
+} from "@/api/google-sheet-config-histroy-api";
+import DataComparison from "@/components/Comparison/DataComparison.vue";
+import {selectHistory} from "@/api/google-sheet-content-api";
 
 export default {
-    name: 'App',
-    components: {
-        AgGridVue
-    },
-    data() {
-        return {
-            historyGrid: {
-                visible: false,
-                gridOptions: {
-                    enableRangeSelection: true,
-                    enableClipboard: true,
-                    sideBar: {
-                        toolPanels: [
-                            {
-                                id: 'columns',
-                                labelDefault: 'Columns',
-                                labelKey: 'columns',
-                                iconKey: 'columns',
-                                toolPanel: 'agColumnsToolPanel',
-                            },
-                            {
-                                id: 'filters',
-                                labelDefault: 'Filters',
-                                labelKey: 'filters',
-                                iconKey: 'filter',
-                                toolPanel: 'agFiltersToolPanel',
-                            }
-                        ],
-                        defaultToolPanel: ''
-                    }
-                },
-                columnDefs: [],
-                rowData: [],
+  name: 'GoogleSheetConfigHistory',
+  components: {DataComparison, searchPane, tablePane, MyDialog, UploadExcelComponent, BackToTop},
+  // 生命周期-页面创建
+  created() {
+    // 初始化方法
+    this.init();
+  },
+  data() {
+    return {
+      /**
+       * 搜索栏配置
+       */
+      filterData: {
+        // 重置
+        reset: true,
+        // 查询参数
+        listQuery: {},
+        // 查询按钮
+        filterBtn: {
+          searchBtn: {
+            permission: '020101',
+            handleClick: this.queryPage,
+          },
+        },
+
+        // 精准数据输入框
+        decimal: [],
+        // 数字输入框
+        numbers: [],
+        // 搜索输入框
+        inputs: [
+          {
+            key: 'id',
+            length: 64,
+            name: i18n.t('view.googleSheetConfigHistory.id'),
+          },
+          {
+            key: 'configurationId',
+            length: 64,
+            name: i18n.t('view.googleSheetConfigHistory.configurationId'),
+          },
+          {
+            key: 'status',
+            length: 64,
+            name: i18n.t('view.googleSheetConfigHistory.status'),
+          },
+        ],
+        // 搜索下拉框
+        selects: [],
+        // 搜索日期框
+        datePickers: [],
+        // 搜索时间框
+        timePickers: [],
+        // 搜索日期及时间框
+        dateTimePickers: [
+          {
+            key: 'creTime',
+            name: i18n.t('view.googleSheetConfigHistory.creTime'),
+          },
+          {
+            key: 'updTime',
+            name: i18n.t('view.googleSheetConfigHistory.updTime'),
+          },
+        ],
+      },
+
+      /**
+       * 表格配置
+       */
+      dataSource: {
+        // 表格加载
+        loading: true,
+        // 列表项
+        columns: [
+          {
+            key: 'id',
+            label: i18n.t('view.googleSheetConfigHistory.id'),
+            sortable: true,
+          },
+          {
+            key: 'configurationId',
+            label: i18n.t('view.googleSheetConfigHistory.configurationId'),
+            sortable: true,
+          },
+          {
+            key: 'statusName',
+            label: i18n.t('view.googleSheetConfigHistory.status'),
+            sortable: false,
+          },
+          {
+            key: 'remark',
+            label: i18n.t('view.googleSheetConfigHistory.remark'),
+            sortable: true,
+          },
+          {
+            hide: true,
+            key: 'creUserId',
+            label: i18n.t('view.googleSheetConfigHistory.creUserId'),
+            sortable: true,
+          },
+          {
+            width: 160,
+            key: 'creTime',
+            label: i18n.t('view.googleSheetConfigHistory.creTime'),
+            sortable: true,
+          },
+          {
+            hide: true,
+            key: 'updUserId',
+            label: i18n.t('view.googleSheetConfigHistory.updUserId'),
+            sortable: true,
+          },
+          {
+            width: 160,
+            key: 'updTime',
+            label: i18n.t('view.googleSheetConfigHistory.updTime'),
+            sortable: true,
+          },
+          {
+            key: 'outputHeaderName',
+            label: i18n.t('view.googleSheetConfigHistory.outputHeader'),
+            sortable: false,
+          },
+          {
+            key: 'ignoreDriveName',
+            label: i18n.t('view.googleSheetConfigHistory.ignoreDrive'),
+            sortable: false,
+          },
+          {
+            key: 'sourceUrl',
+            label: i18n.t('view.googleSheetConfigHistory.sourceUrl'),
+            sortable: true,
+          },
+          {
+            key: 'sourceSheet',
+            label: i18n.t('view.googleSheetConfigHistory.sourceSheet'),
+            sortable: true,
+          },
+          {
+            key: 'sourceSheetId',
+            label: i18n.t('view.googleSheetConfigHistory.sourceSheetId'),
+            sortable: true,
+          },
+          {
+            width: 400,
+            key: 'sourceLink',
+            label: i18n.t('view.googleSheetConfigHistory.sourceLink'),
+            sortable: false,
+            isLink: true,
+            showField: "sourceUrl",
+            valueField: "sourceLink",
+          },
+          {
+            key: 'dataRange',
+            label: i18n.t('view.googleSheetConfigHistory.dataRange'),
+            sortable: true,
+          },
+          {
+            key: 'judgeCondition',
+            label: i18n.t('view.googleSheetConfigHistory.judgeCondition'),
+            sortable: true,
+          },
+          {
+            key: 'compareField',
+            label: i18n.t('view.googleSheetConfigHistory.compareField'),
+            sortable: true,
+          },
+          {
+            key: 'outputField',
+            label: i18n.t('view.googleSheetConfigHistory.outputField'),
+            sortable: true,
+          },
+          {
+            key: 'outputMode',
+            label: i18n.t('view.googleSheetConfigHistory.outputMode'),
+            sortable: true,
+          },
+          {
+            key: 'cron',
+            label: i18n.t('view.googleSheetConfigHistory.cron'),
+            sortable: true,
+          },
+          {
+            key: 'targetUrl',
+            label: i18n.t('view.googleSheetConfigHistory.targetUrl'),
+            sortable: true,
+          },
+          {
+            key: 'targetSheet',
+            label: i18n.t('view.googleSheetConfigHistory.targetSheet'),
+            sortable: true,
+          },
+          {
+            key: 'targetSheetId',
+            label: i18n.t('view.googleSheetConfigHistory.targetSheetId'),
+            sortable: true,
+          },
+          {
+            width: 400,
+            key: 'targetLink',
+            label: i18n.t('view.googleSheetConfigHistory.targetLink'),
+            sortable: false,
+            isLink: true,
+            showField: "targetUrl",
+            valueField: "targetLink",
+          },
+          {
+            key: 'targetStart',
+            label: i18n.t('view.googleSheetConfigHistory.targetStart'),
+            sortable: true,
+          },
+        ],
+        // 表格数据
+        data: [],
+        // 表格排序
+        sort: {
+          sortProp: '',
+          sortOrder: '',
+        },
+        // 分页插件
+        pagination: {
+          size: 10,   // 页数
+          current: 1, // 页码
+          total: 10,  // 总计
+        },
+        // 操作按钮项
+        operation: {
+          label: i18n.t('table.operation'),
+          width: 80,
+          data: [
+            {
+              name: "比对",
+              type: 'primary',
+              permission: '020106',
+              handleRowClick: (index, row) => {
+                selectHistory({historyId: row.id}).then((res) => {
+                  this.infoDialogData.model = res.data
+                  this.infoDialogData.visible = true;
+                })
+              }
             },
-            gridApi: null,
-            gridColumnApi: null,
-            originalRowData: [
-                ["记录编号", "产品ID", "URL"],
-                ["18190022166717372416", "85493226", "1111"],
-                ["18190022166717372416", "854932226", "2222"],
-                ["18190022166717372416", "854932226", "3333"],
-                ["18190022166717372416", "854932226", "4444"],
-            ],
-            comparisonRowData: [
-                ["记录编号", "URL"],
-                ["18190022166717372416", "1111"],
-                ["18190022166717372416", "3333"],
-                ["18190022166717372416", "3333"],
-            ],
-        };
-    },
-    computed: {
-        defaultColDef() {
-            return {
-                resizable: true,
-                sortable: true
-            };
+          ]
         },
-        mainColumnDefs() {
-            return this.getColumnDefs(this.originalRowData[0], true);
-        },
-        originalColumnDefs() {
-            return this.getColumnDefs(this.originalRowData[0], false);
-        },
-        comparisonColumnDefs() {
-            return this.getColumnDefs(this.comparisonRowData[0], false);
-        }
-    },
-    methods: {
-        onGridReady(params) {
-            this.gridApi = params.api;
-            this.gridColumnApi = params.columnApi;
-            this.gridApi.sizeColumnsToFit();
-        },
-        toggleHistoryGrid() {
-            this.historyGrid.visible = !this.historyGrid.visible;
-        },
-        prepareRowData(data) {
-            return data.slice(1).map(row => row.reduce((acc, value, index) => ({...acc, [data[0][index]]: value}), {}));
-        },
-        simpleColumnDefs(headers, flag) {
-            return this.getColumnDefs(headers, flag);
-        },
-        getColumnDefs(headers, highlightDifferences) {
-            return headers.map(header => ({
-                headerName: header,
-                field: header,
-                cellStyle: highlightDifferences ? (params) => this.computeCellStyle(params, header, headers) : null,
-            }));
-        },
-        computeCellStyle(params, header, headers) {
-            const comparisonHeaders = this.comparisonRowData[0];
-            const originalHeaders = this.originalRowData[0];
-            const comparisonIndex = comparisonHeaders.indexOf(header);
-            const originalIndex = originalHeaders.indexOf(header);
+      },
 
-            // 高亮显示逻辑仅适用于主表格，确保此逻辑被触发
-            const isMissingInComparison = originalIndex !== -1 && comparisonIndex === -1;
-            const isMissingInOriginal = comparisonIndex !== -1 && originalIndex === -1;
+      // 多选框
+      selected: [],
 
-            if (isMissingInComparison || isMissingInOriginal) {
-                return {backgroundColor: 'orange'}; // 突出显示仅存在于一个标题数组中的标题
-            }
-
-            const comparisonRow = this.comparisonRowData[params.node.rowIndex + 1];
-            if (!comparisonRow || params.value !== comparisonRow[comparisonIndex]) {
-                return {backgroundColor: 'yellow'}; // 突出显示具有不同值的单元格
-            }
-            return null;
-        },
+      /**
+       * 弹出框
+       */
+      // 弹出框的宽度
+      dialogWidth: '50%',
+      // 详情
+      infoDialogData: {
+        visible: false,
+        modelItem: [
+          {
+            type: 'input',
+            length: 64,
+            key: 'id',
+            name: i18n.t('view.googleSheetConfigHistory.id'),
+          },
+          {
+            type: 'input',
+            length: 64,
+            key: 'configurationId',
+            name: i18n.t('view.googleSheetConfigHistory.configurationId'),
+          },
+          {
+            type: 'input',
+            length: 64,
+            key: 'status',
+            name: i18n.t('view.googleSheetConfigHistory.status'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'remark',
+            name: i18n.t('view.googleSheetConfigHistory.remark'),
+          },
+          {
+            type: 'input',
+            length: 32,
+            key: 'creUserId',
+            name: i18n.t('view.googleSheetConfigHistory.creUserId'),
+          },
+          {
+            type: 'datetime',
+            key: 'creTime',
+            name: i18n.t('view.googleSheetConfigHistory.creTime'),
+          },
+          {
+            type: 'input',
+            length: 32,
+            key: 'updUserId',
+            name: i18n.t('view.googleSheetConfigHistory.updUserId'),
+          },
+          {
+            type: 'datetime',
+            key: 'updTime',
+            name: i18n.t('view.googleSheetConfigHistory.updTime'),
+          },
+          {
+            type: 'input',
+            length: 8,
+            key: 'outputHeader',
+            name: i18n.t('view.googleSheetConfigHistory.outputHeader'),
+          },
+          {
+            type: 'input',
+            length: 8,
+            key: 'ignoreDrive',
+            name: i18n.t('view.googleSheetConfigHistory.ignoreDrive'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'sourceUrl',
+            name: i18n.t('view.googleSheetConfigHistory.sourceUrl'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'sourceSheet',
+            name: i18n.t('view.googleSheetConfigHistory.sourceSheet'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'sourceSheetId',
+            name: i18n.t('view.googleSheetConfigHistory.sourceSheetId'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'sourceLink',
+            name: i18n.t('view.googleSheetConfigHistory.sourceLink'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'dataRange',
+            name: i18n.t('view.googleSheetConfigHistory.dataRange'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'judgeCondition',
+            name: i18n.t('view.googleSheetConfigHistory.judgeCondition'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'compareField',
+            name: i18n.t('view.googleSheetConfigHistory.compareField'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'outputField',
+            name: i18n.t('view.googleSheetConfigHistory.outputField'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'outputMode',
+            name: i18n.t('view.googleSheetConfigHistory.outputMode'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'cron',
+            name: i18n.t('view.googleSheetConfigHistory.cron'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'targetUrl',
+            name: i18n.t('view.googleSheetConfigHistory.targetUrl'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'targetSheet',
+            name: i18n.t('view.googleSheetConfigHistory.targetSheet'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'targetSheetId',
+            name: i18n.t('view.googleSheetConfigHistory.targetSheetId'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'targetLink',
+            name: i18n.t('view.googleSheetConfigHistory.targetLink'),
+          },
+          {
+            type: 'input',
+            length: 255,
+            key: 'targetStart',
+            name: i18n.t('view.googleSheetConfigHistory.targetStart'),
+          },
+        ],
+        model: {},
+      },
     }
-};
+  },
+  methods: {
+    /**
+     * 页面初始化方法
+     */
+    async init() {
+      // 获取列表
+      await this.queryPage()
+    },
+
+    /**
+     * 表格内部
+     */
+    // 页数事件
+    changeSize(size) {
+      this.dataSource.pagination.size = size;
+      this.queryPage();
+    },
+    // 页码事件
+    changeCurrent(current) {
+      this.dataSource.pagination.current = current;
+      this.queryPage();
+    },
+    // 当表格的排序条件发生改变并且数据被重新排序时，触发该事件
+    sortChange(sort) {
+      if (sort.order !== null) {
+        this.dataSource.sort.sortOrder = sort.order === "ascending" ? "ASC" : "DESC";
+        this.dataSource.sort.sortProp = sort.prop;
+      } else {
+        this.dataSource.sort.sortOrder = null;
+        this.dataSource.sort.sortProp = null;
+      }
+      this.queryPage();
+    },
+    // 多选事件
+    selectionChange(selectRows) {
+      this.selected = selectRows.map(item => item.id);
+    },
+    /**
+     * 搜索框
+     */
+    // 获取列表数据
+    async queryPage() {
+      this.dataSource.loading = true;
+      try {
+        const {pagination, sort} = this.dataSource;
+        const res = await queryPageGoogleSheetConfigHistory({...pagination, ...sort, ...this.filterData.listQuery});
+        const {records, size, current, total} = res.data;
+        this.dataSource.data = records;
+        this.dataSource.pagination.size = records.length > 0 ? size : 10;
+        this.dataSource.pagination.current = records.length > 0 ? current : 1;
+        this.dataSource.pagination.total = records.length > 0 ? total : 0;
+        this.$nextTick(() => {
+          this.dataSource.loading = false;
+        });
+      } catch (error) {
+        this.$message.error(i18n.t('common.error') + ":" + error);
+        this.dataSource.loading = false;
+      }
+    },
+  }
+}
 </script>
-
-<style scoped>
-.app-container {
-    margin: 10px;
-}
-
-.header-row {
-    margin-bottom: 10px;
-}
-
-.table-header {
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 5px; /* 减小标题下的间隔 */
-}
-
-.ag-theme-balham {
-    border-radius: 4px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 减少阴影的扩散，使得整体显得更紧凑 */
-}
-
-/* 减少行间距，使得表格间隔更紧凑 */
-.el-row {
-    margin-bottom: 5px;
-}
-
-/* 优化表格内部单元格的内边距，减少单元格间距 */
-.ag-cell {
-    padding: 4px 8px; /* 根据实际需要调整 */
-}
-</style>
