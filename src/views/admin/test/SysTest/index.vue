@@ -1,31 +1,33 @@
 <template>
     <div>
-        <button @click="toggleHistoryGrid">显示/隐藏历史版本比较</button>
+        <el-button type="primary" @click="toggleHistoryGrid">显示/隐藏历史版本比较</el-button>
         <div v-if="historyGrid.visible" class="history-grid">
             <!-- 原始数据表格 -->
             <ag-grid-vue
                 class="ag-theme-alpine"
                 style="width: 100%; height: 300px;"
-                :columnDefs="simpleColumnDefs(originalRowData[0],false)"
+                :columnDefs="originalColumnDefs"
                 :rowData="prepareRowData(originalRowData)"
                 :defaultColDef="defaultColDef"
-                :gridOptions="historyGrid.gridOptions">
+                :gridOptions="historyGrid.gridOptions"
+                @grid-ready="onGridReady">
             </ag-grid-vue>
             <!-- 对比数据表格 -->
             <ag-grid-vue
                 class="ag-theme-alpine"
                 style="width: 100%; height: 300px;"
-                :columnDefs="simpleColumnDefs(comparisonRowData[0],false)"
+                :columnDefs="comparisonColumnDefs"
                 :rowData="prepareRowData(comparisonRowData)"
                 :defaultColDef="defaultColDef"
-                :gridOptions="historyGrid.gridOptions">
+                :gridOptions="historyGrid.gridOptions"
+                @grid-ready="onGridReady">
             </ag-grid-vue>
         </div>
         <!-- 主表格 -->
         <ag-grid-vue
             class="ag-theme-alpine"
             style="width: 100%; height: 600px;"
-            :columnDefs="simpleColumnDefs(originalRowData[0],true)"
+            :columnDefs="mainColumnDefs"
             :rowData="prepareRowData(originalRowData)"
             :defaultColDef="defaultColDef"
             :gridOptions="historyGrid.gridOptions"
@@ -66,7 +68,7 @@ export default {
                                 toolPanel: 'agFiltersToolPanel',
                             }
                         ],
-                        defaultToolPanel: 'columns'
+                        defaultToolPanel: ''
                     }
                 },
                 columnDefs: [],
@@ -96,36 +98,37 @@ export default {
                 sortable: true
             };
         },
+        mainColumnDefs() {
+            return this.getColumnDefs(this.originalRowData[0], true);
+        },
+        originalColumnDefs() {
+            return this.getColumnDefs(this.originalRowData[0], false);
+        },
+        comparisonColumnDefs() {
+            return this.getColumnDefs(this.comparisonRowData[0], false);
+        }
     },
     methods: {
         onGridReady(params) {
             this.gridApi = params.api;
             this.gridColumnApi = params.columnApi;
-            this.gridApi.sizeColumnsToFit();  // Adjust column widths to fit the grid size
+            this.gridApi.sizeColumnsToFit();
         },
         toggleHistoryGrid() {
             this.historyGrid.visible = !this.historyGrid.visible;
         },
         prepareRowData(data) {
-            if (!data || data.length <= 1) {
-                return [];
-            }
-            return data.slice(1).map(row => {
-                return row.reduce((acc, value, index) => {
-                    acc[data[0][index]] = value;
-                    return acc;
-                }, {});
-            });
+            return data.slice(1).map(row => row.reduce((acc, value, index) => ({...acc, [data[0][index]]: value}), {}));
         },
-        createColumnDefs(headers, highlightDifferences) {
+        simpleColumnDefs(headers, flag) {
+            return this.getColumnDefs(headers, flag);
+        },
+        getColumnDefs(headers, highlightDifferences) {
             return headers.map(header => ({
                 headerName: header,
                 field: header,
                 cellStyle: highlightDifferences ? (params) => this.computeCellStyle(params, header, headers) : null,
             }));
-        },
-        simpleColumnDefs(headers, flag) {
-            return this.createColumnDefs(headers, flag);
         },
         computeCellStyle(params, header, headers) {
             const comparisonHeaders = this.comparisonRowData[0];
